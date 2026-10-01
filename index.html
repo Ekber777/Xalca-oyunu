@@ -24,14 +24,11 @@
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  :root[data-theme="light"], :root:not([data-theme="dark"]) {
-  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
     height: 100%;
     margin: 0;
-    background:
-      radial-gradient(ellipse at top, var(--bg-mid) 0%, var(--bg-deep) 60%);
+    background: radial-gradient(ellipse at top, var(--bg-mid) 0%, var(--bg-deep) 60%);
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--cream);
     overflow: hidden;
@@ -48,14 +45,15 @@
     gap: 10px;
   }
 
-  /* ---- Header ---- */
   #titleRow {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: center;
     gap: 8px;
     flex-shrink: 0;
     padding-top: 2px;
+    width: 100%;
+    position: relative;
   }
   #titleRow h1 {
     font-family: 'Newsreader', serif;
@@ -65,18 +63,27 @@
     letter-spacing: 0.5px;
     color: var(--gold);
   }
-  #titleRow .dot {
-    width: 5px; height: 5px;
+  #titleRow .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); opacity: 0.5; }
+  #titleRow .sub { font-size: 12px; color: var(--cream-dim); font-style: italic; font-family: 'Newsreader', serif; }
+  #soundToggle {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--surface);
+    border: 1px solid var(--gold-soft);
     border-radius: 50%;
-    background: var(--gold);
-    opacity: 0.5;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0;
+    color: var(--cream);
   }
-  #titleRow .sub {
-    font-size: 12px;
-    color: var(--cream-dim);
-    font-style: italic;
-    font-family: 'Newsreader', serif;
-  }
+  #soundToggle:active { transform: translateY(-50%) scale(0.92); }
 
   #hud {
     width: 100%;
@@ -90,20 +97,9 @@
     flex-shrink: 0;
   }
   #hud .box { text-align: center; }
-  #hud .label {
-    font-size: 10px;
-    color: var(--cream-dim);
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-  }
-  #hud .value {
-    font-family: 'Newsreader', serif;
-    font-size: 21px;
-    font-weight: 700;
-    color: var(--gold);
-  }
+  #hud .label { font-size: 10px; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 1.2px; }
+  #hud .value { font-family: 'Newsreader', serif; font-size: 21px; font-weight: 700; color: var(--gold); }
 
-  /* ---- Board with ornamental frame ---- */
   #boardWrap {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -122,41 +118,18 @@
     border-radius: 12px;
     pointer-events: none;
   }
-  .corner {
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border: 1.5px solid var(--gold);
-    opacity: 0.6;
-    pointer-events: none;
-  }
+  .corner { position: absolute; width: 14px; height: 14px; border: 1.5px solid var(--gold); opacity: 0.6; pointer-events: none; }
   .corner.tl { top: 3px; left: 3px; border-right: none; border-bottom: none; }
   .corner.tr { top: 3px; right: 3px; border-left: none; border-bottom: none; }
   .corner.bl { bottom: 3px; left: 3px; border-right: none; border-top: none; }
   .corner.br { bottom: 3px; right: 3px; border-left: none; border-top: none; }
 
-  #board {
-    display: grid;
-    width: 100%;
-    height: 100%;
-    gap: 3px;
-    position: relative;
-  }
-  .cell {
-    background: var(--grid-empty);
-    border-radius: 4px;
-    border: 1px solid var(--grid-border);
-    transition: background 0.08s;
-  }
+  #board { display: grid; width: 100%; height: 100%; gap: 3px; position: relative; }
+  .cell { background: var(--grid-empty); border-radius: 4px; border: 1px solid var(--grid-border); transition: background 0.08s; }
   .cell.filled { border: none; }
-  .cell.filled::after {
-    content: '';
-    position: absolute;
-  }
   .cell.preview { outline: 2px solid var(--gold); outline-offset: -2px; }
   .cell.preview-bad { outline: 2px solid var(--danger); outline-offset: -2px; }
 
-  /* ---- Tray ---- */
   #trayWrap {
     width: 100%;
     flex: 1;
@@ -170,15 +143,7 @@
     padding: 10px;
     gap: 6px;
   }
-  .piece-slot {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    min-height: 56px;
-  }
+  .piece-slot { flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; min-height: 56px; }
   .piece-slot svg { cursor: grab; touch-action: none; }
   .piece-slot.empty { opacity: 0.12; }
 
@@ -196,20 +161,8 @@
     z-index: 20;
   }
   #overlay.hide { display: none; }
-  #overlay h2 {
-    font-family: 'Newsreader', serif;
-    margin: 0 0 8px;
-    font-size: 27px;
-    color: var(--gold);
-    font-weight: 700;
-  }
-  #overlay p {
-    margin: 0 0 20px;
-    color: var(--cream-dim);
-    font-size: 13.5px;
-    line-height: 1.5;
-    max-width: 260px;
-  }
+  #overlay h2 { font-family: 'Newsreader', serif; margin: 0 0 8px; font-size: 27px; color: var(--gold); font-weight: 700; }
+  #overlay p { margin: 0 0 20px; color: var(--cream-dim); font-size: 13.5px; line-height: 1.5; max-width: 260px; }
   button {
     background: linear-gradient(135deg, var(--gold), #b8842a);
     color: #241533;
@@ -224,20 +177,9 @@
   }
   button:active { transform: scale(0.96); }
 
-  #footer {
-    font-size: 11px;
-    color: var(--cream-dim);
-    text-align: center;
-    flex-shrink: 0;
-  }
+  #footer { font-size: 11px; color: var(--cream-dim); text-align: center; flex-shrink: 0; }
 
-  .dragging-piece {
-    position: fixed;
-    pointer-events: none;
-    z-index: 50;
-    opacity: 0.92;
-    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
-  }
+  .dragging-piece { position: fixed; pointer-events: none; z-index: 50; opacity: 0.92; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
   .float-score {
     position: absolute;
     font-family: 'Newsreader', serif;
@@ -263,6 +205,7 @@
     <h1>Xalça</h1>
     <span class="dot"></span>
     <span class="sub">naxış toxu</span>
+    <button id="soundToggle" title="Səsi aç/bağla">🔊</button>
   </div>
 
   <div id="hud">
@@ -304,31 +247,18 @@
   const bestEl = document.getElementById('best');
   const comboEl = document.getElementById('combo');
   const boardWrap = document.getElementById('boardWrap');
+  const soundToggleBtn = document.getElementById('soundToggle');
 
-  // Kilim-inspired palette: pomegranate, saffron, teal, plum, indigo, terracotta
   const COLORS = ['#c1432e', '#d4a23a', '#1d7a6e', '#7a3f6b', '#33538f', '#b5651d'];
 
   const SHAPES = [
-    [[1]],
-    [[1,1]],
-    [[1],[1]],
-    [[1,1,1]],
-    [[1],[1],[1]],
-    [[1,1],[1,1]],
-    [[1,1,1],[1,0,0]],
-    [[1,1,1],[0,0,1]],
-    [[1,0],[1,0],[1,1]],
-    [[0,1],[0,1],[1,1]],
-    [[1,1,1,1]],
-    [[1],[1],[1],[1]],
-    [[1,1,0],[0,1,1]],
-    [[0,1,1],[1,1,0]],
-    [[1,1,1],[0,1,0]],
-    [[0,1,0],[1,1,1]],
-    [[1,1],[1,0]],
-    [[1,1],[0,1]],
-    [[1,0],[1,1]],
-    [[0,1],[1,1]],
+    [[1]], [[1,1]], [[1],[1]], [[1,1,1]], [[1],[1],[1]],
+    [[1,1],[1,1]], [[1,1,1],[1,0,0]], [[1,1,1],[0,0,1]],
+    [[1,0],[1,0],[1,1]], [[0,1],[0,1],[1,1]],
+    [[1,1,1,1]], [[1],[1],[1],[1]],
+    [[1,1,0],[0,1,1]], [[0,1,1],[1,1,0]],
+    [[1,1,1],[0,1,0]], [[0,1,0],[1,1,1]],
+    [[1,1],[1,0]], [[1,1],[0,1]], [[1,0],[1,1]], [[0,1],[1,1]],
   ];
 
   let grid = [];
@@ -339,9 +269,98 @@
   let tray = [null, null, null];
   let gameOver = false;
   let cellPx = 0;
+  let soundOn = true;
 
   bestEl.textContent = best;
 
+  // ========== SƏS SİSTEMİ ==========
+  const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+  let musicTimer = null;
+  const PENTATONIC = [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37]; // A minor pentatonic-ish, folk feel
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new AudioCtxClass();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playTone(freq, duration, type, volume, delay) {
+    if (!soundOn) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime + (delay || 0);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(volume, t0 + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.05);
+  }
+
+  function playPlaceSound() {
+    playTone(250, 0.09, 'triangle', 0.18);
+    playTone(120, 0.09, 'sine', 0.1, 0.01);
+  }
+
+  function playClearSound(comboCount) {
+    const base = 420 + Math.min(comboCount, 6) * 90;
+    playTone(base, 0.18, 'triangle', 0.22);
+    playTone(base * 1.5, 0.22, 'sine', 0.14, 0.05);
+  }
+
+  function playGameOverSound() {
+    playTone(300, 0.3, 'sawtooth', 0.12);
+    playTone(200, 0.4, 'sawtooth', 0.1, 0.15);
+  }
+
+  // Simple generative background loop — soft, folk-leaning pentatonic arpeggio
+  function startMusic() {
+    if (musicTimer) return;
+    ensureAudio();
+    let step = 0;
+    musicTimer = setInterval(() => {
+      if (!soundOn) return;
+      const note = PENTATONIC[(step * 3) % PENTATONIC.length];
+      playTone(note / 2, 1.1, 'sine', 0.045);
+      if (step % 4 === 0) {
+        playTone(PENTATONIC[(step) % PENTATONIC.length], 0.8, 'triangle', 0.03, 0.3);
+      }
+      step++;
+    }, 900);
+  }
+
+  function stopMusic() {
+    if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+  }
+
+  function updateSoundToggleUI() {
+    soundToggleBtn.textContent = soundOn ? '🔊' : '🔇';
+  }
+
+  soundToggleBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    updateSoundToggleUI();
+    if (soundOn) { ensureAudio(); startMusic(); } else { stopMusic(); }
+    localStorage.setItem('xalcaSound', soundOn ? '1' : '0');
+  });
+
+  // Unlock audio context on first user interaction (mobile browsers require this)
+  function unlockAudioOnce() {
+    ensureAudio();
+    if (soundOn) startMusic();
+    window.removeEventListener('pointerdown', unlockAudioOnce);
+  }
+  window.addEventListener('pointerdown', unlockAudioOnce, { once: true });
+
+  const savedSound = localStorage.getItem('xalcaSound');
+  if (savedSound === '0') soundOn = false;
+  updateSoundToggleUI();
+
+  // ========== OYUN MƏNTİQİ ==========
   function initGrid() {
     grid = [];
     for (let r = 0; r < SIZE; r++) grid.push(new Array(SIZE).fill(null));
@@ -380,18 +399,11 @@
     }
   }
 
-  function randomShape() {
-    return SHAPES[Math.floor(Math.random() * SHAPES.length)];
-  }
-
-  function makePiece() {
-    return { shape: randomShape(), color: Math.floor(Math.random() * COLORS.length) };
-  }
+  function randomShape() { return SHAPES[Math.floor(Math.random() * SHAPES.length)]; }
+  function makePiece() { return { shape: randomShape(), color: Math.floor(Math.random() * COLORS.length) }; }
 
   function refillTray() {
-    for (let i = 0; i < 3; i++) {
-      if (!tray[i]) tray[i] = makePiece();
-    }
+    for (let i = 0; i < 3; i++) if (!tray[i]) tray[i] = makePiece();
     renderTray();
     if (!anyPieceFits()) endGame();
   }
@@ -420,59 +432,8 @@
     return false;
   }
 
-  function anyPieceFits() {
-    return tray.some(p => p && pieceFitsAnywhere(p.shape));
-  }
-// --- SƏS SİSTEMİ (Web Audio API) ---
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
+  function anyPieceFits() { return tray.some(p => p && pieceFitsAnywhere(p.shape)); }
 
-function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new AudioCtx();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-}
-
-// 1. Blok lövhəyə qoyulanda çıxan səs
-function playPlaceSound() {
-    initAudio();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.frequency.setValueAtTime(250, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.08);
-    
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.08);
-}
-
-// 2. Xətt silinəndə / Kombo səsi (Kombo çoxaldıqca səs tonu ucalır!)
-function playClearSound(comboCount) {
-    initAudio();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    // Hər kombo artdıqca ton daha fərəhli/yüksək olur:
-    const baseFreq = 400 + (comboCount * 120); 
-    osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, audioCtx.currentTime + 0.2);
-    
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.2);
-}
   function placePiece(piece, atR, atC) {
     const cells = shapeCells(piece.shape);
     for (const [dr, dc] of cells) grid[atR + dr][atC + dc] = piece.color;
@@ -543,6 +504,7 @@ function playClearSound(comboCount) {
     }
   }
 
+  // ========== SÜRÜKLƏ-BURAX (düzəldilmiş) ==========
   let dragState = null;
 
   function attachDrag(slot, index) {
@@ -558,7 +520,7 @@ function playClearSound(comboCount) {
       ghost.innerHTML = pieceSVG(piece.shape, COLORS[piece.color], cellPx);
       document.body.appendChild(ghost);
 
-      dragState = { index, piece, ghost, boardRect: rect };
+      dragState = { index, piece, ghost, boardRect: rect, cellPx };
       slot.style.opacity = '0.2';
 
       moveGhost(e.clientX, e.clientY);
@@ -575,51 +537,47 @@ function playClearSound(comboCount) {
     };
   }
 
-  function ghostTargetCell(clientX, clientY) {
-    const rect = board.getBoundingClientRect();
-    const computed = window.getComputedStyle(board);
-    
-    const borderLeft = parseFloat(computed.borderLeftWidth) || 0;
-    const borderTop = parseFloat(computed.borderTopWidth) || 0;
-    const padLeft = parseFloat(computed.paddingLeft) || 0;
-    const padTop = parseFloat(computed.paddingTop) || 0;
+  // Tək, ardıcıl mənbə: eyni ofset həm görüntü (ghost), həm hədəf hüceyrə hesablamasında istifadə olunur
+  const LIFT_OFFSET = 36; // şəkil barmaqdan nə qədər yuxarıda görünsün (piksel)
 
+  function ghostTargetCell(clientX, clientY) {
+    const rect = dragState.boardRect;
+    const cpx = dragState.cellPx;
     const piece = dragState.piece;
     const rows = piece.shape.length, cols = piece.shape[0].length;
 
-    const innerWidth = board.clientWidth - padLeft - (parseFloat(computed.paddingRight) || 0);
-    const cellPx = innerWidth / SIZE;
+    // Parçanın yuxarı-sol küncünün ekran koordinatı (moveGhost ilə eyni düstur)
+    const ghostLeft = clientX - (cols * cpx) / 2;
+    const ghostTop = clientY - (rows * cpx) - LIFT_OFFSET + (cpx / 2);
 
-    const x = clientX - rect.left - borderLeft - padLeft - (cols * cellPx) / 2;
-    const y = clientY - rect.top - borderTop - padTop - (rows * cellPx) / 2;
+    const relX = ghostLeft - rect.left;
+    const relY = ghostTop - rect.top;
 
-    return [ Math.round(y / cellPx), Math.round(x / cellPx) ];
-}
+    const c = Math.round(relX / cpx);
+    const r = Math.round(relY / cpx);
+    return { r, c };
+  }
 
-function moveGhost(clientX, clientY) {
+  function moveGhost(clientX, clientY) {
     if (!dragState) return;
     const piece = dragState.piece;
+    const cpx = dragState.cellPx;
     const rows = piece.shape.length, cols = piece.shape[0].length;
 
-    const computed = window.getComputedStyle(board);
-    const padLeft = parseFloat(computed.paddingLeft) || 0;
-    const innerWidth = board.clientWidth - padLeft - (parseFloat(computed.paddingRight) || 0);
-    const cellPx = innerWidth / SIZE;
+    dragState.ghost.style.left = (clientX - (cols * cpx) / 2) + 'px';
+    dragState.ghost.style.top = (clientY - (rows * cpx) - LIFT_OFFSET + (cpx / 2)) + 'px';
 
-    dragState.ghost.style.left = (clientX - (cols * cellPx) / 2) + 'px';
-    dragState.ghost.style.top = (clientY - (rows * cellPx) / 2 - 35) + 'px';
-
-    const [r, c] = ghostTargetCell(clientX, clientY);
+    const { r, c } = ghostTargetCell(clientX, clientY);
     clearPreview();
-
     const fits = canPlace(piece.shape, r, c);
     for (const [dr, dc] of shapeCells(piece.shape)) {
-        const rr = r + dr, cc = c + dc;
-        if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
-            cellEls[rr][cc].classList.add(fits ? 'preview' : 'preview-bad');
-        }
+      const rr = r + dr, cc = c + dc;
+      if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
+        cellEls[rr][cc].classList.add(fits ? 'preview' : 'preview-bad');
+      }
     }
-}
+  }
+
   function clearPreview() {
     for (let r = 0; r < SIZE; r++)
       for (let c = 0; c < SIZE; c++)
@@ -644,6 +602,7 @@ function moveGhost(clientX, clientY) {
 
   function endGame() {
     gameOver = true;
+    playGameOverSound();
     overlay.classList.remove('hide');
     document.querySelector('#overlay h2').textContent = 'Naxış tamamlandı';
     overlayText.textContent = `Xal: ${score}` + (score >= best && score > 0 ? ' — yeni ən yaxşı nəticə!' : '');
@@ -661,6 +620,7 @@ function moveGhost(clientX, clientY) {
     tray = [null, null, null];
     overlay.classList.add('hide');
     refillTray();
+    if (soundOn) startMusic();
   }
 
   overlayBtn.addEventListener('click', startGame);
