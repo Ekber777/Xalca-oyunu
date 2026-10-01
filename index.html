@@ -423,11 +423,56 @@
   function anyPieceFits() {
     return tray.some(p => p && pieceFitsAnywhere(p.shape));
   }
+// --- SƏS SİSTEMİ (Web Audio API) ---
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
 
+function initAudio() {
+    if (!audioCtx) audioCtx = new AudioCtx();
+}
+
+// 1. Blok lövhəyə qoyulanda çıxan səs
+function playPlaceSound() {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.08);
+    
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.08);
+}
+
+// 2. Xətt silinəndə / Kombo səsi (Kombo çoxaldıqca səs tonu ucalır!)
+function playClearSound(comboCount) {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    // Hər kombo artdıqca ton daha fərəhli/yüksək olur:
+    const baseFreq = 400 + (comboCount * 120); 
+    osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, audioCtx.currentTime + 0.2);
+    
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
+}
   function placePiece(piece, atR, atC) {
     const cells = shapeCells(piece.shape);
     for (const [dr, dc] of cells) grid[atR + dr][atC + dc] = piece.color;
     score += cells.length;
+    playPlaceSound();
     clearLines();
     renderGrid();
     scoreEl.textContent = score;
@@ -447,6 +492,7 @@
       const bonus = totalLines * SIZE * 10 * combo;
       score += bonus;
       showFloatScore('+' + bonus);
+      playClearSound(combo);
       for (const r of fullRows) for (let c = 0; c < SIZE; c++) grid[r][c] = null;
       for (const c of fullCols) for (let r = 0; r < SIZE; r++) grid[r][c] = null;
     } else {
@@ -528,28 +574,34 @@
     const rect = dragState.boardRect;
     const piece = dragState.piece;
     const rows = piece.shape.length, cols = piece.shape[0].length;
+    
+    // Barmağın/mousenin blokun düz mərkəzində durması üçün offset hesablanması:
     const px = clientX - rect.left - (cols * cellPx) / 2;
-    const py = clientY - rect.top - (rows * cellPx) - 10;
-    return { r: Math.round(py / cellPx), c: Math.round(px / cellPx) };
-  }
+    const py = clientY - rect.top - (rows * cellPx) / 2;
+    
+    return [ Math.round(py / cellPx), Math.round(px / cellPx) ];
+}
 
-  function moveGhost(clientX, clientY) {
+function moveGhost(clientX, clientY) {
     if (!dragState) return;
     const piece = dragState.piece;
     const rows = piece.shape.length, cols = piece.shape[0].length;
-    dragState.ghost.style.left = (clientX - (cols * cellPx) / 2) + 'px';
-    dragState.ghost.style.top = (clientY - rows * cellPx - 40) + 'px';
 
-    const { r, c } = ghostTargetCell(clientX, clientY);
+    // Sürüklənən blokun (ghost) ekrandakı mövqeyini mərkəzləşdiririk:
+    dragState.ghost.style.left = (clientX - (cols * cellPx) / 2) + 'px';
+    dragState.ghost.style.top = (clientY - (rows * cellPx) / 2) + 'px';
+
+    const [r, c] = ghostTargetCell(clientX, clientY);
     clearPreview();
+
     const fits = canPlace(piece.shape, r, c);
     for (const [dr, dc] of shapeCells(piece.shape)) {
-      const rr = r + dr, cc = c + dc;
-      if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
-        cellEls[rr][cc].classList.add(fits ? 'preview' : 'preview-bad');
-      }
+        const rr = r + dr, cc = c + dc;
+        if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
+            cellEls[rr][cc].classList.add(fits ? 'preview' : 'preview-bad');
+        }
     }
-  }
+}
 
   function clearPreview() {
     for (let r = 0; r < SIZE; r++)
