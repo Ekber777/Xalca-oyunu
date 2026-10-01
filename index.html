@@ -576,14 +576,24 @@ function playClearSound(comboCount) {
   }
 
   function ghostTargetCell(clientX, clientY) {
-    const rect = dragState.boardRect;
+    const rect = board.getBoundingClientRect();
+    const computed = window.getComputedStyle(board);
+    
+    const borderLeft = parseFloat(computed.borderLeftWidth) || 0;
+    const borderTop = parseFloat(computed.borderTopWidth) || 0;
+    const padLeft = parseFloat(computed.paddingLeft) || 0;
+    const padTop = parseFloat(computed.paddingTop) || 0;
+
     const piece = dragState.piece;
     const rows = piece.shape.length, cols = piece.shape[0].length;
-    
-    const px = clientX - rect.left - (cols * cellPx) / 2;
-    const py = clientY - rect.top - (rows * cellPx) / 2;
-    
-    return [ Math.round(py / cellPx), Math.round(px / cellPx) ];
+
+    const innerWidth = board.clientWidth - padLeft - (parseFloat(computed.paddingRight) || 0);
+    const cellPx = innerWidth / SIZE;
+
+    const x = clientX - rect.left - borderLeft - padLeft - (cols * cellPx) / 2;
+    const y = clientY - rect.top - borderTop - padTop - (rows * cellPx) / 2;
+
+    return [ Math.round(y / cellPx), Math.round(x / cellPx) ];
 }
 
 function moveGhost(clientX, clientY) {
@@ -591,8 +601,13 @@ function moveGhost(clientX, clientY) {
     const piece = dragState.piece;
     const rows = piece.shape.length, cols = piece.shape[0].length;
 
+    const computed = window.getComputedStyle(board);
+    const padLeft = parseFloat(computed.paddingLeft) || 0;
+    const innerWidth = board.clientWidth - padLeft - (parseFloat(computed.paddingRight) || 0);
+    const cellPx = innerWidth / SIZE;
+
     dragState.ghost.style.left = (clientX - (cols * cellPx) / 2) + 'px';
-    dragState.ghost.style.top = (clientY - (rows * cellPx) / 2) + 'px';
+    dragState.ghost.style.top = (clientY - (rows * cellPx) / 2 - 35) + 'px';
 
     const [r, c] = ghostTargetCell(clientX, clientY);
     clearPreview();
@@ -605,7 +620,6 @@ function moveGhost(clientX, clientY) {
         }
     }
 }
-
   function clearPreview() {
     for (let r = 0; r < SIZE; r++)
       for (let c = 0; c < SIZE; c++)
