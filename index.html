@@ -428,7 +428,12 @@ const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
 function initAudio() {
-    if (!audioCtx) audioCtx = new AudioCtx();
+    if (!audioCtx) {
+        audioCtx = new AudioCtx();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
 }
 
 // 1. Blok lövhəyə qoyulanda çıxan səs
@@ -575,7 +580,6 @@ function playClearSound(comboCount) {
     const piece = dragState.piece;
     const rows = piece.shape.length, cols = piece.shape[0].length;
     
-    // Barmağın/mousenin blokun düz mərkəzində durması üçün offset hesablanması:
     const px = clientX - rect.left - (cols * cellPx) / 2;
     const py = clientY - rect.top - (rows * cellPx) / 2;
     
@@ -587,7 +591,6 @@ function moveGhost(clientX, clientY) {
     const piece = dragState.piece;
     const rows = piece.shape.length, cols = piece.shape[0].length;
 
-    // Sürüklənən blokun (ghost) ekrandakı mövqeyini mərkəzləşdiririk:
     dragState.ghost.style.left = (clientX - (cols * cellPx) / 2) + 'px';
     dragState.ghost.style.top = (clientY - (rows * cellPx) / 2) + 'px';
 
