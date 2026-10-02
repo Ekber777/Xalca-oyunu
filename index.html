@@ -109,12 +109,28 @@
   .corner.br { bottom: 3px; right: 3px; border-left: none; border-top: none; }
 
   #board { display: grid; width: 100%; height: 100%; gap: 3px; position: relative; }
-  .cell { background: var(--grid-empty); border-radius: 4px; border: 1px solid var(--grid-border); transition: background 0.08s, transform 0.15s; }
+  .cell { position: relative; background: var(--grid-empty); border-radius: 4px; border: 1px solid var(--grid-border); transition: background 0.08s, transform 0.15s; }
   .cell.filled { border: none; }
   .cell.preview { outline: 2px solid var(--gold); outline-offset: -2px; }
   .cell.preview-bad { outline: 2px solid var(--danger); outline-offset: -2px; }
   .cell.preview-bomb { outline: 2px solid #ff8a3d; outline-offset: -2px; }
+  .cell.line-ready { background: rgba(255, 215, 90, 0.4) !important; }
   .cell.exploding { animation: explode 0.3s ease-out forwards; }
+  .cell.ice::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(200, 240, 255, 0.55);
+    border-radius: 4px;
+  }
+  .cell.ice-1::after { background: rgba(200, 240, 255, 0.28); }
+  .cell.ice::before {
+    content: '❄';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 65%;
+    color: rgba(255,255,255,0.9);
+    z-index: 2;
+  }
   @keyframes explode {
     0% { transform: scale(1); filter: brightness(2); }
     100% { transform: scale(0.3); filter: brightness(0.5); opacity: 0; }
@@ -320,6 +336,52 @@
   .help-icon { font-size: 20px; flex-shrink: 0; width: 26px; text-align: center; }
   #helpCloseBtn { width: 100%; margin-top: 6px; }
 
+  #toolRow { display: flex; justify-content: center; width: 100%; flex-shrink: 0; }
+  .tool-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--surface-strong);
+    border: 1px solid var(--gold-soft);
+    color: var(--cream);
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+  }
+  .tool-btn.active { background: linear-gradient(135deg, #ff8a3d, #c1432e); border-color: #ff8a3d; color: #fff; }
+  .tool-btn.depleted { opacity: 0.6; }
+  .tool-btn .count-badge {
+    background: var(--gold); color: #241533; font-weight: 800; font-size: 11px;
+    padding: 1px 7px; border-radius: 10px; min-width: 16px; text-align: center;
+  }
+  #boardWrap.hammer-mode { outline: 3px solid #ff8a3d; outline-offset: 2px; }
+
+  .iconBtn.lang { font-size: 11px; font-weight: 800; }
+
+  #adModal, #helpModal {
+    position: fixed; inset: 0; z-index: 110;
+    background: rgba(10, 6, 20, 0.88);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  #adModal.hide { display: none; }
+  #adCard {
+    background: linear-gradient(160deg, var(--bg-mid), var(--bg-deep));
+    border: 1px solid var(--gold-soft);
+    border-radius: 18px;
+    padding: 22px 20px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    animation: helpPop 0.3s cubic-bezier(.3,1.5,.4,1) both;
+  }
+  #adCard h2 { font-family: 'Newsreader', serif; color: var(--gold); margin: 0 0 10px; font-size: 20px; }
+  #adCard p { color: var(--cream-dim); font-size: 13px; line-height: 1.5; margin: 0 0 16px; }
+  #adProgressWrap { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); overflow: hidden; margin-bottom: 16px; }
+  #adProgressWrap.hide { display: none; }
+  #adProgressBar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), #ff8a3d); }
+  #adButtons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
   .toast {
     position: fixed;
     bottom: 24px;
@@ -347,8 +409,9 @@
   <div id="titleRow">
     <h1>Xalça</h1>
     <span class="dot"></span>
-    <span class="sub">naxış toxu</span>
+    <span class="sub" id="titleSub">naxış toxu</span>
     <div id="btnGroup">
+      <button class="iconBtn lang" id="langBtn" title="Dil">AZ</button>
       <button class="iconBtn" id="helpBtn" title="Necə oynanılır">❓</button>
       <button class="iconBtn" id="shareBtn" title="Paylaş">📤</button>
       <button class="iconBtn" id="soundToggle" title="Səsi aç/bağla">🔊</button>
@@ -356,9 +419,9 @@
   </div>
 
   <div id="hud">
-    <div class="box"><div class="label">Xal</div><div class="value" id="score">0</div></div>
-    <div class="box"><div class="label">Ən yaxşı</div><div class="value" id="best">0</div></div>
-    <div class="box"><div class="label">Silsilə</div><div class="value" id="combo">0</div></div>
+    <div class="box"><div class="label" id="labelScore">Xal</div><div class="value" id="score">0</div></div>
+    <div class="box"><div class="label" id="labelBest">Ən yaxşı</div><div class="value" id="best">0</div></div>
+    <div class="box"><div class="label" id="labelCombo">Silsilə</div><div class="value" id="combo">0</div></div>
   </div>
 
   <div id="boardWrap">
@@ -377,6 +440,10 @@
     </div>
   </div>
 
+  <div id="toolRow">
+    <button class="tool-btn" id="hammerBtn">🔨 <span class="count-badge" id="hammerCount">2</span></button>
+  </div>
+
   <div id="trayWrap">
     <div class="piece-slot" id="slot0"></div>
     <div class="piece-slot" id="slot1"></div>
@@ -388,15 +455,21 @@
 
 <div id="helpModal" class="hide">
   <div id="helpCard">
-    <h2>Necə oynanılır</h2>
-    <div class="help-item"><span class="help-icon">🧩</span><div><b>Parçanı yerləşdir</b><br>Aşağıdakı 3 parçadan birinə toxun, şəbəkəyə sürüşdür, barmağını qaldıranda yerləşəcək.</div></div>
-    <div class="help-item"><span class="help-icon">✅</span><div><b>Sətir/sütun tamamla</b><br>Bir sıranı (üfüqi və ya şaquli) tamamən doldursan, o sıra avtomatik təmizlənir və xal qazanırsan.</div></div>
-    <div class="help-item"><span class="help-icon">🔥</span><div><b>Silsilə (kombo)</b><br>Ard-arda sıra təmizləsən, bonus xal artır, ekranda "Əla!", "Möhtəşəm!" kimi sözlər çıxır.</div></div>
-    <div class="help-item"><span class="help-icon">💥</span><div><b>Bomba parça</b><br>Bəzən tünd rəngli bomba parça çıxır — yerləşdirdiyin yerin 3x3 ətrafı dərhal partlayıb təmizlənir.</div></div>
-    <div class="help-item"><span class="help-icon">✨</span><div><b>Tam təmizləmə</b><br>Bütün şəbəkəni boşaltsan, böyük bonus və xüsusi animasiya qazanırsan.</div></div>
-    <div class="help-item"><span class="help-icon">🎨</span><div><b>Yeni temalar</b><br>Xal topladıqca yeni rəng palitraları açılır — başlanğıc ekranında seçə bilərsən.</div></div>
-    <div class="help-item"><span class="help-icon">⛔</span><div><b>Oyunun bitməsi</b><br>Heç bir parça şəbəkəyə sığmadıqda oyun bitir — yenidən başlaya bilərsən.</div></div>
+    <h2 id="helpTitleEl">Necə oynanılır</h2>
+    <div id="helpItemsContainer"></div>
     <button id="helpCloseBtn">Anladım</button>
+  </div>
+</div>
+
+<div id="adModal" class="hide">
+  <div id="adCard">
+    <h2 id="adTitleEl">Reklama bax</h2>
+    <p id="adDescEl">Pulsuz çəkic haqqı qazanmaq üçün qısa reklama bax.</p>
+    <div id="adProgressWrap" class="hide"><div id="adProgressBar"></div></div>
+    <div id="adButtons">
+      <button id="adWatchBtn">Reklama bax</button>
+      <button id="adCancelBtn" class="secondary">Ləğv et</button>
+    </div>
   </div>
 </div>
 
@@ -416,6 +489,14 @@
   const helpBtn = document.getElementById('helpBtn');
   const helpModal = document.getElementById('helpModal');
   const helpCloseBtn = document.getElementById('helpCloseBtn');
+  const langBtn = document.getElementById('langBtn');
+  const hammerBtn = document.getElementById('hammerBtn');
+  const hammerCountEl = document.getElementById('hammerCount');
+  const adModal = document.getElementById('adModal');
+  const adWatchBtn = document.getElementById('adWatchBtn');
+  const adCancelBtn = document.getElementById('adCancelBtn');
+  const adProgressWrap = document.getElementById('adProgressWrap');
+  const adProgressBar = document.getElementById('adProgressBar');
 
   helpBtn.addEventListener('click', () => helpModal.classList.remove('hide'));
   helpCloseBtn.addEventListener('click', () => helpModal.classList.add('hide'));
@@ -425,12 +506,146 @@
     setTimeout(() => { helpModal.classList.remove('hide'); localStorage.setItem('xalcaSeenHelp', '1'); }, 500);
   }
 
+  // ========== DİL SİSTEMİ ==========
+  const STRINGS = {
+    az: {
+      sub: 'naxış toxu', xal: 'Xal', best: 'Ən yaxşı', combo: 'Silsilə',
+      introText: 'Naxış parçalarını şəbəkəyə sürüşdür. Bir sətri və ya sütunu tamamlayanda naxış toxunur və açılır. Bəzən 💥 bomba parça çıxır!',
+      startBtn: 'Toxumağa başla', footer: 'Bir parçaya toxunub şəbəkəyə sürüşdür',
+      gameOverTitle: 'Naxış tamamlandı', playAgainBtn: 'Yenidən toxu',
+      newBest: ' — yeni ən yaxşı nəticə!', scoreLabel: 'Xal: ',
+      helpTitle: 'Necə oynanılır', helpClose: 'Anladım',
+      help1t: 'Parçanı yerləşdir', help1d: 'Aşağıdakı 3 parçadan birinə toxun, şəbəkəyə sürüşdür, barmağını qaldıranda yerləşəcək.',
+      help2t: 'Sətir/sütun tamamla', help2d: 'Bir sıranı tamamən doldursan, o sıra avtomatik təmizlənir və xal qazanırsan.',
+      help3t: 'Silsilə (kombo)', help3d: 'Ard-arda sıra təmizləsən, bonus xal artır, ekranda "Əla!", "Möhtəşəm!" kimi sözlər çıxır.',
+      help7t: 'Çəkic aləti', help7d: 'Çəkici seçib istənilən bir xananı sil. Hər oyunda 2 pulsuz haqqın var, sonra reklama baxaraq yenisini qazanırsan.',
+      help4t: 'Bomba parça', help4d: 'Bəzən tünd rəngli bomba parça çıxır — yerləşdirdiyin yerin 3x3 ətrafı dərhal partlayıb təmizlənir.',
+      help8t: 'Buz kublar', help8d: 'Buzlu xanalar tam açılmaq üçün iki dəfə sətir/sütun təmizləməsindən keçməlidir.',
+      help5t: 'Tam təmizləmə', help5d: 'Bütün şəbəkəni boşaltsan, böyük bonus və xüsusi animasiya qazanırsan.',
+      help6t: 'Yeni temalar', help6d: 'Xal topladıqca yeni rəng palitraları açılır — başlanğıc ekranında seçə bilərsən.',
+      help9t: 'Oyunun bitməsi', help9d: 'Heç bir parça şəbəkəyə sığmadıqda oyun bitir — yenidən başlaya bilərsən.',
+      themeLockedSuffix: ' xal lazım', themeUnlockedToast: '🎨 Yeni tema açıldı: ',
+      copiedToast: 'Mətn kopyalandı!', shareUnsupported: 'Paylaşım dəstəklənmir.',
+      fullClearTitle: '✨ Xalça tamamlandı! ✨', fullClearBonus: (b) => `+${b} bonus xal`,
+      watchAdTitle: 'Reklama bax', watchAdDesc: 'Pulsuz çəkic haqqı qazanmaq üçün qısa reklama bax (hazırda sınaq rejimi).',
+      watchAdBtn: 'Reklama bax', watchAdLoading: 'Reklam yüklənir...', watchAdGranted: '+1 çəkic haqqı qazandın!',
+      cancelBtn: 'Ləğv et',
+      shareText: (s) => `Xalça oyununda ${s} xal topladım! 🧶 Sən bacararsan?`,
+      comboWords: ['', 'Gözəl!', 'Əla!', 'Möhtəşəm!', 'Heyrətamiz!', 'Dahiyanə!', 'Əfsanəvi!'],
+    },
+    tr: {
+      sub: 'deseni ör', xal: 'Puan', best: 'En iyi', combo: 'Seri',
+      introText: 'Desen parçalarını ızgaraya sürükle. Bir satırı veya sütunu tamamladığında desen dokunur ve açılır. Bazen 💥 bomba parça çıkar!',
+      startBtn: 'Dokumaya başla', footer: 'Bir parçaya dokunup ızgaraya sürükle',
+      gameOverTitle: 'Desen tamamlandı', playAgainBtn: 'Tekrar oyna',
+      newBest: ' — yeni en iyi skor!', scoreLabel: 'Puan: ',
+      helpTitle: 'Nasıl oynanır', helpClose: 'Anladım',
+      help1t: 'Parçayı yerleştir', help1d: 'Aşağıdaki 3 parçadan birine dokun, ızgaraya sürükle, parmağını kaldırınca yerleşecek.',
+      help2t: 'Satır/sütun tamamla', help2d: 'Bir satırı tamamen doldurursan, otomatik temizlenir ve puan kazanırsın.',
+      help3t: 'Seri (kombo)', help3d: 'Art arda satır temizlersen, bonus puan artar, ekranda "Harika!", "Muhteşem!" gibi kelimeler çıkar.',
+      help7t: 'Çekiç aracı', help7d: 'Çekici seç, istediğin bir hücreyi sil. Her oyunda 2 ücretsiz hakkın var, sonra reklam izleyerek yenisini kazanırsın.',
+      help4t: 'Bomba parça', help4d: 'Bazen koyu renkli bomba parça çıkar — yerleştirdiğin yerin 3x3 çevresi hemen patlayıp temizlenir.',
+      help8t: 'Buz küpleri', help8d: 'Buzlu hücreler tam açılmak için iki kez satır/sütun temizlemesinden geçmeli.',
+      help5t: 'Tam temizleme', help5d: 'Tüm ızgarayı boşaltırsan, büyük bonus ve özel animasyon kazanırsın.',
+      help6t: 'Yeni temalar', help6d: 'Puan topladıkça yeni renk paletleri açılır — başlangıç ekranında seçebilirsin.',
+      help9t: 'Oyunun bitmesi', help9d: 'Hiçbir parça ızgaraya sığmadığında oyun biter — yeniden başlayabilirsin.',
+      themeLockedSuffix: ' puan gerekli', themeUnlockedToast: '🎨 Yeni tema açıldı: ',
+      copiedToast: 'Metin kopyalandı!', shareUnsupported: 'Paylaşım desteklenmiyor.',
+      fullClearTitle: '✨ Desen tamamlandı! ✨', fullClearBonus: (b) => `+${b} bonus puan`,
+      watchAdTitle: 'Reklamı izle', watchAdDesc: 'Ücretsiz çekiç hakkı kazanmak için kısa bir reklam izle (şu an deneme modu).',
+      watchAdBtn: 'Reklamı izle', watchAdLoading: 'Reklam yükleniyor...', watchAdGranted: '+1 çekiç hakkı kazandın!',
+      cancelBtn: 'İptal',
+      shareText: (s) => `Xalça oyununda ${s} puan topladım! 🧶 Sen yapabilir misin?`,
+      comboWords: ['', 'Güzel!', 'Harika!', 'Muhteşem!', 'Şaşırtıcı!', 'Dahiyane!', 'Efsanevi!'],
+    },
+    en: {
+      sub: 'weave the pattern', xal: 'Score', best: 'Best', combo: 'Streak',
+      introText: 'Drag pattern pieces onto the grid. Complete a row or column to weave and clear it. Sometimes a 💥 bomb piece appears!',
+      startBtn: 'Start weaving', footer: 'Touch a piece and drag it onto the grid',
+      gameOverTitle: 'Pattern complete', playAgainBtn: 'Weave again',
+      newBest: ' — new best score!', scoreLabel: 'Score: ',
+      helpTitle: 'How to play', helpClose: 'Got it',
+      help1t: 'Place a piece', help1d: 'Touch one of the 3 pieces below, drag it onto the grid, release to place it.',
+      help2t: 'Complete a row/column', help2d: 'Fill an entire row or column and it clears automatically, earning points.',
+      help3t: 'Streak (combo)', help3d: 'Clear rows back to back for bonus points — words like "Nice!", "Amazing!" appear.',
+      help7t: 'Hammer tool', help7d: 'Select the hammer and remove any single cell. 2 free uses per game, then watch an ad for more.',
+      help4t: 'Bomb piece', help4d: 'A dark bomb piece sometimes appears — it instantly clears the 3x3 area around where you place it.',
+      help8t: 'Ice cubes', help8d: 'Frosted cells need two line clears to fully melt away.',
+      help5t: 'Full clear', help5d: 'Empty the entire grid for a big bonus and a special animation.',
+      help6t: 'New themes', help6d: 'Earn points to unlock new color palettes — pick one from the start screen.',
+      help9t: 'Game over', help9d: 'The game ends when no piece fits on the grid — you can start again.',
+      themeLockedSuffix: ' points needed', themeUnlockedToast: '🎨 New theme unlocked: ',
+      copiedToast: 'Text copied!', shareUnsupported: 'Sharing is not supported.',
+      fullClearTitle: '✨ Pattern complete! ✨', fullClearBonus: (b) => `+${b} bonus points`,
+      watchAdTitle: 'Watch ad', watchAdDesc: 'Watch a short ad to earn a free hammer use (currently a test mode).',
+      watchAdBtn: 'Watch ad', watchAdLoading: 'Loading ad...', watchAdGranted: '+1 hammer use earned!',
+      cancelBtn: 'Cancel',
+      shareText: (s) => `I scored ${s} points in Xalça! 🧶 Can you beat it?`,
+      comboWords: ['', 'Nice!', 'Great!', 'Awesome!', 'Amazing!', 'Incredible!', 'Legendary!'],
+    },
+  };
+  const LANG_CYCLE = ['az', 'tr', 'en'];
+  let currentLang = localStorage.getItem('xalcaLang') || 'az';
+  function t(key) {
+    const val = STRINGS[currentLang][key];
+    return val !== undefined ? val : STRINGS.az[key];
+  }
+  function updateLangBtn() { langBtn.textContent = currentLang.toUpperCase(); }
+  langBtn.addEventListener('click', () => {
+    const idx = LANG_CYCLE.indexOf(currentLang);
+    currentLang = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
+    localStorage.setItem('xalcaLang', currentLang);
+    updateLangBtn();
+    applyLanguage();
+  });
+  updateLangBtn();
+
+  const HELP_ITEMS = [
+    { icon: '🧩', key: 'help1' }, { icon: '✅', key: 'help2' }, { icon: '🔥', key: 'help3' },
+    { icon: '🔨', key: 'help7' }, { icon: '💥', key: 'help4' }, { icon: '🧊', key: 'help8' },
+    { icon: '✨', key: 'help5' }, { icon: '🎨', key: 'help6' }, { icon: '⛔', key: 'help9' },
+  ];
+  function renderHelp() {
+    document.getElementById('helpTitleEl').textContent = t('helpTitle');
+    document.getElementById('helpItemsContainer').innerHTML = HELP_ITEMS.map(item =>
+      `<div class="help-item"><span class="help-icon">${item.icon}</span><div><b>${t(item.key + 't')}</b><br>${t(item.key + 'd')}</div></div>`
+    ).join('');
+    helpCloseBtn.textContent = t('helpClose');
+  }
+
+  let overlayMode = 'start';
+  let lastGameScore = 0;
+  let lastIsNewBest = false;
+  function renderOverlayTexts() {
+    const h2 = document.querySelector('#overlay h2');
+    if (overlayMode === 'start') {
+      h2.textContent = 'Xalça';
+      overlayText.textContent = t('introText');
+      overlayBtn.textContent = t('startBtn');
+    } else {
+      h2.textContent = t('gameOverTitle');
+      overlayText.textContent = t('scoreLabel') + lastGameScore + (lastIsNewBest ? t('newBest') : '');
+      overlayBtn.textContent = t('playAgainBtn');
+    }
+  }
+
+  function applyLanguage() {
+    document.getElementById('titleSub').textContent = t('sub');
+    document.getElementById('labelScore').textContent = t('xal');
+    document.getElementById('labelBest').textContent = t('best');
+    document.getElementById('labelCombo').textContent = t('combo');
+    document.getElementById('footer').textContent = t('footer');
+    renderOverlayTexts();
+    renderHelp();
+    renderThemeRow();
+  }
+
   const THEMES = [
-    { id: 'kilim', name: 'Kilim', unlockScore: 0, colors: ['#c1432e', '#d4a23a', '#1d7a6e', '#7a3f6b', '#33538f', '#b5651d'] },
-    { id: 'xezer', name: 'Xəzər', unlockScore: 300, colors: ['#1a5f7a', '#2f9c95', '#5bc0be', '#0d3b53', '#3a7ca5', '#6fb3b8'] },
-    { id: 'naringi', name: 'Nar bağı', unlockScore: 800, colors: ['#e8603c', '#f2a65a', '#d8345f', '#f7cac9', '#c0392b', '#e67e22'] },
-    { id: 'zumrud', name: 'Zümrüd', unlockScore: 1500, colors: ['#1e7d4f', '#52b788', '#2d6a4f', '#40916c', '#74c69d', '#1b4332'] },
-    { id: 'gece', name: 'Gecə', unlockScore: 3000, colors: ['#3d348b', '#7678ed', '#f7b801', '#f35b04', '#2b2d42', '#8338ec'] },
+    { id: 'kilim', names: { az: 'Kilim', tr: 'Kilim', en: 'Kilim' }, unlockScore: 0, colors: ['#c1432e', '#d4a23a', '#1d7a6e', '#7a3f6b', '#33538f', '#b5651d'] },
+    { id: 'xezer', names: { az: 'Xəzər', tr: 'Hazar', en: 'Caspian' }, unlockScore: 300, colors: ['#1a5f7a', '#2f9c95', '#5bc0be', '#0d3b53', '#3a7ca5', '#6fb3b8'] },
+    { id: 'naringi', names: { az: 'Nar bağı', tr: 'Nar Bahçesi', en: 'Pomegranate Grove' }, unlockScore: 800, colors: ['#e8603c', '#f2a65a', '#d8345f', '#f7cac9', '#c0392b', '#e67e22'] },
+    { id: 'zumrud', names: { az: 'Zümrüd', tr: 'Zümrüt', en: 'Emerald' }, unlockScore: 1500, colors: ['#1e7d4f', '#52b788', '#2d6a4f', '#40916c', '#74c69d', '#1b4332'] },
+    { id: 'gece', names: { az: 'Gecə', tr: 'Gece', en: 'Night' }, unlockScore: 3000, colors: ['#3d348b', '#7678ed', '#f7b801', '#f35b04', '#2b2d42', '#8338ec'] },
   ];
   let COLORS = THEMES[0].colors;
   const BOMB_COLOR = '#2a2a2a';
@@ -461,7 +676,7 @@
     }
     if (newlyUnlocked) {
       saveUnlockedThemeIds(unlocked);
-      showToast('🎨 Yeni tema açıldı: ' + newlyUnlocked.name + '!');
+      showToast(t('themeUnlockedToast') + newlyUnlocked.names[currentLang] + '!');
       renderThemeRow();
     }
   }
@@ -476,7 +691,7 @@
       const isUnlocked = unlocked.includes(theme.id);
       const swatch = document.createElement('div');
       swatch.className = 'theme-swatch' + (theme.id === selected ? ' active' : '') + (isUnlocked ? '' : ' locked');
-      swatch.title = isUnlocked ? theme.name : `${theme.name} — ${theme.unlockScore} xal lazım`;
+      swatch.title = isUnlocked ? theme.names[currentLang] : `${theme.names[currentLang]} — ${theme.unlockScore}${t('themeLockedSuffix')}`;
       const grad = `conic-gradient(${theme.colors.join(',')})`;
       swatch.style.background = isUnlocked ? grad : 'rgba(255,255,255,0.08)';
       if (!isUnlocked) swatch.innerHTML = '<span class="lock-icon">🔒</span>';
@@ -497,10 +712,9 @@
     [[1,1],[1,0]], [[1,1],[0,1]], [[1,0],[1,1]], [[0,1],[1,1]],
   ];
 
-  const COMBO_WORDS = ['', 'Gözəl!', 'Əla!', 'Möhtəşəm!', 'Heyrətamiz!', 'Dahiyanə!', 'Əfsanəvi!'];
   const COMBO_SPEECH = ['', 'Nice!', 'Great!', 'Awesome!', 'Amazing!', 'Incredible!', 'Legendary!'];
 
-  let grid = []; // each cell: null or {color, bomb:false}
+  let grid = []; // each cell: null or {color, ice:0}
   let cellEls = [];
   let score = 0;
   let best = parseInt(localStorage.getItem('xalcaBest') || '0', 10) || 0;
@@ -509,6 +723,10 @@
   let gameOver = false;
   let cellPx = 0;
   let soundOn = true;
+  let hammerUses = 2;
+  let hammerActive = false;
+  let noClearStreak = 0;
+  let nextIceAt = 400;
 
   bestEl.textContent = best;
 
@@ -552,6 +770,7 @@
     playTone(500, 0.1, 'square', 0.08, 0.02);
   }
   function playGameOverSound() { playTone(300, 0.3, 'sawtooth', 0.12); playTone(200, 0.4, 'sawtooth', 0.1, 0.15); }
+  function playHammerSound() { playTone(150, 0.12, 'square', 0.2); playTone(80, 0.15, 'sine', 0.15, 0.02); }
 
   function startMusic() {
     if (musicTimer) return;
@@ -601,16 +820,16 @@
   }
 
   shareBtn.addEventListener('click', async () => {
-    const text = `Xalça oyununda ${score} xal topladım! 🧶 Sən bacararsan?`;
+    const text = t('shareText')(score);
     const shareData = { title: 'Xalça', text, url: location.href };
     if (navigator.share) {
       try { await navigator.share(shareData); } catch (e) { /* user cancelled */ }
     } else {
       try {
         await navigator.clipboard.writeText(text + ' ' + location.href);
-        showToast('Mətn kopyalandı! İstədiyin yerə yapışdıra bilərsən.');
+        showToast(t('copiedToast'));
       } catch (e) {
-        showToast('Paylaşım dəstəklənmir.');
+        showToast(t('shareUnsupported'));
       }
     }
   });
@@ -642,11 +861,13 @@
     for (let r = 0; r < SIZE; r++) {
       for (let c = 0; c < SIZE; c++) {
         const el = cellEls[r][c];
-        el.classList.remove('preview', 'preview-bad', 'preview-bomb');
+        el.classList.remove('preview', 'preview-bad', 'preview-bomb', 'line-ready', 'ice', 'ice-1', 'ice-2');
         const cell = grid[r][c];
         if (cell !== null) {
           el.classList.add('filled');
           el.style.background = cell.color;
+          if (cell.ice === 2) el.classList.add('ice', 'ice-2');
+          else if (cell.ice === 1) el.classList.add('ice', 'ice-1');
         } else {
           el.classList.remove('filled');
           el.style.background = '';
@@ -657,12 +878,49 @@
 
   function randomShape() { return SHAPES[Math.floor(Math.random() * SHAPES.length)]; }
 
+  function occupancyRatio() {
+    let filled = 0;
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] !== null) filled++;
+    return filled / (SIZE * SIZE);
+  }
+  function getDifficultyTier() { return Math.floor(score / 500); }
+  function isInRelief() { return noClearStreak >= 5 || occupancyRatio() > 0.75; }
+
   function makePiece() {
-    const isBomb = Math.random() < 0.08; // ~8% ehtimalla bomba parça
-    if (isBomb) {
-      return { shape: [[1]], color: BOMB_COLOR, bomb: true };
+    const relief = isInRelief();
+    const tier = getDifficultyTier();
+    const bombChance = relief ? 0.12 : Math.max(0.04, 0.08 - tier * 0.005);
+    const isBomb = Math.random() < bombChance;
+    if (isBomb) return { shape: [[1]], color: BOMB_COLOR, bomb: true };
+
+    let pool = SHAPES;
+    if (relief) {
+      pool = SHAPES.filter(s => shapeCells(s).length <= 3);
+    } else if (tier >= 3) {
+      pool = SHAPES.filter(s => shapeCells(s).length >= 3);
     }
-    return { shape: randomShape(), color: COLORS[Math.floor(Math.random() * COLORS.length)], bomb: false };
+    if (!pool.length) pool = SHAPES;
+    const shape = pool[Math.floor(Math.random() * pool.length)];
+    return { shape, color: COLORS[Math.floor(Math.random() * COLORS.length)], bomb: false };
+  }
+
+  function spawnIceObstacle() {
+    const emptyCells = [];
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] === null) emptyCells.push([r, c]);
+    if (!emptyCells.length) return;
+    const [r, c] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    grid[r][c] = { color, ice: 2 };
+  }
+
+  function maybeSpawnIce() {
+    if (isInRelief()) return;
+    if (score >= nextIceAt) {
+      spawnIceObstacle();
+      const tier = getDifficultyTier();
+      const interval = Math.max(200, 400 - tier * 30);
+      nextIceAt = score + interval;
+    }
   }
 
   function refillTray() {
@@ -712,8 +970,9 @@
   }
 
   function showComboText(comboCount) {
-    const idx = Math.min(comboCount, COMBO_WORDS.length - 1);
-    const word = COMBO_WORDS[idx];
+    const words = t('comboWords');
+    const idx = Math.min(comboCount, words.length - 1);
+    const word = words[idx];
     if (!word) return;
     const el = document.createElement('div');
     el.className = 'combo-text';
@@ -769,6 +1028,7 @@
       vibrate(12);
     }
     clearLines();
+    maybeSpawnIce();
     renderGrid();
     scoreEl.textContent = score;
     checkThemeUnlocks(score);
@@ -791,8 +1051,29 @@
       showComboText(combo);
       playClearSound(combo);
       vibrate([15, 15, 15 + combo * 6]);
-      for (const r of fullRows) for (let c = 0; c < SIZE; c++) grid[r][c] = null;
-      for (const c of fullCols) for (let r = 0; r < SIZE; r++) grid[r][c] = null;
+      noClearStreak = 0;
+      for (const r of fullRows) {
+        for (let c = 0; c < SIZE; c++) {
+          const cell = grid[r][c];
+          if (cell && cell.ice > 0) {
+            cell.ice -= 1;
+            if (cell.ice === 0) grid[r][c] = null;
+          } else {
+            grid[r][c] = null;
+          }
+        }
+      }
+      for (const c of fullCols) {
+        for (let r = 0; r < SIZE; r++) {
+          const cell = grid[r][c];
+          if (cell && cell.ice > 0) {
+            cell.ice -= 1;
+            if (cell.ice === 0) grid[r][c] = null;
+          } else {
+            grid[r][c] = null;
+          }
+        }
+      }
 
       const isFullyEmpty = grid.every(row => row.every(v => v === null));
       if (isFullyEmpty) {
@@ -802,6 +1083,7 @@
       }
     } else {
       combo = 0;
+      noClearStreak++;
     }
     comboEl.textContent = combo;
     if (score > best) {
@@ -818,7 +1100,7 @@
 
     const banner = document.createElement('div');
     banner.className = 'full-clear-banner';
-    banner.innerHTML = `<span>✨ Xalça tamamlandı! ✨<br><small style="font-size:15px; opacity:0.85;">+${bonus} bonus xal</small></span>`;
+    banner.innerHTML = `<span>${t('fullClearTitle')}<br><small style="font-size:15px; opacity:0.85;">${t('fullClearBonus')(bonus)}</small></span>`;
     boardWrap.appendChild(banner);
     setTimeout(() => banner.remove(), 1300);
 
@@ -874,6 +1156,72 @@
     }
   }
 
+  // ========== ÇƏKİC ALƏTİ ==========
+  function updateHammerUI() {
+    hammerCountEl.textContent = hammerUses;
+    hammerBtn.classList.toggle('depleted', hammerUses <= 0);
+  }
+
+  hammerBtn.addEventListener('click', () => {
+    if (gameOver) return;
+    if (hammerUses <= 0) { openWatchAdModal(); return; }
+    hammerActive = !hammerActive;
+    boardWrap.classList.toggle('hammer-mode', hammerActive);
+    hammerBtn.classList.toggle('active', hammerActive);
+  });
+
+  function onBoardPointerDown(e) {
+    if (!hammerActive || gameOver) return;
+    const rect = boardEl.getBoundingClientRect();
+    const cpx = rect.width / SIZE;
+    const c = Math.floor((e.clientX - rect.left) / cpx);
+    const r = Math.floor((e.clientY - rect.top) / cpx);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return;
+    if (grid[r][c] !== null) {
+      grid[r][c] = null;
+      playHammerSound();
+      vibrate(30);
+      cellEls[r][c].classList.add('exploding');
+      setTimeout(() => { cellEls[r][c].classList.remove('exploding'); renderGrid(); }, 300);
+      hammerUses--;
+      updateHammerUI();
+      hammerActive = false;
+      boardWrap.classList.remove('hammer-mode');
+      hammerBtn.classList.remove('active');
+      if (!anyPieceFits()) endGame();
+    }
+  }
+  boardEl.addEventListener('pointerdown', onBoardPointerDown);
+
+  // ========== REKLAM SİMULYASİYASI (rewarded ad — real şəbəkə sonra qoşulacaq) ==========
+  function openWatchAdModal() {
+    document.getElementById('adTitleEl').textContent = t('watchAdTitle');
+    document.getElementById('adDescEl').textContent = t('watchAdDesc');
+    adWatchBtn.textContent = t('watchAdBtn');
+    adCancelBtn.textContent = t('cancelBtn');
+    adProgressWrap.classList.add('hide');
+    adProgressBar.style.transition = 'none';
+    adProgressBar.style.width = '0%';
+    adModal.classList.remove('hide');
+  }
+  adCancelBtn.addEventListener('click', () => adModal.classList.add('hide'));
+  adWatchBtn.addEventListener('click', () => {
+    adWatchBtn.disabled = true;
+    adProgressWrap.classList.remove('hide');
+    document.getElementById('adDescEl').textContent = t('watchAdLoading');
+    requestAnimationFrame(() => {
+      adProgressBar.style.transition = 'width 2s linear';
+      requestAnimationFrame(() => { adProgressBar.style.width = '100%'; });
+    });
+    setTimeout(() => {
+      hammerUses += 1;
+      updateHammerUI();
+      adModal.classList.add('hide');
+      adWatchBtn.disabled = false;
+      showToast(t('watchAdGranted'));
+    }, 2100);
+  });
+
   // ========== SÜRÜKLƏ-BURAX ==========
   let dragState = null;
   const LIFT_OFFSET = 36;
@@ -920,6 +1268,27 @@
     return { r: Math.round(relY / cpx), c: Math.round(relX / cpx) };
   }
 
+  function computeWouldClearLines(shape, atR, atC) {
+    const cells = shapeCells(shape);
+    const occupied = (r, c) => grid[r][c] !== null || cells.some(([dr, dc]) => atR + dr === r && atC + dc === c);
+    const rowsToCheck = new Set(cells.map(([dr]) => atR + dr));
+    const colsToCheck = new Set(cells.map(([, dc]) => atC + dc));
+    const fullRows = [], fullCols = [];
+    for (const r of rowsToCheck) {
+      if (r < 0 || r >= SIZE) continue;
+      let full = true;
+      for (let c = 0; c < SIZE; c++) if (!occupied(r, c)) { full = false; break; }
+      if (full) fullRows.push(r);
+    }
+    for (const c of colsToCheck) {
+      if (c < 0 || c >= SIZE) continue;
+      let full = true;
+      for (let r = 0; r < SIZE; r++) if (!occupied(r, c)) { full = false; break; }
+      if (full) fullCols.push(c);
+    }
+    return { fullRows, fullCols };
+  }
+
   function moveGhost(clientX, clientY) {
     if (!dragState) return;
     const piece = dragState.piece;
@@ -938,12 +1307,17 @@
         cellEls[rr][cc].classList.add(fits ? (piece.bomb ? 'preview-bomb' : 'preview') : 'preview-bad');
       }
     }
+    if (fits && !piece.bomb) {
+      const { fullRows, fullCols } = computeWouldClearLines(piece.shape, r, c);
+      for (const rr of fullRows) for (let cc = 0; cc < SIZE; cc++) cellEls[rr][cc].classList.add('line-ready');
+      for (const cc of fullCols) for (let rr = 0; rr < SIZE; rr++) cellEls[rr][cc].classList.add('line-ready');
+    }
   }
 
   function clearPreview() {
     for (let r = 0; r < SIZE; r++)
       for (let c = 0; c < SIZE; c++)
-        cellEls[r][c].classList.remove('preview', 'preview-bad', 'preview-bomb');
+        cellEls[r][c].classList.remove('preview', 'preview-bad', 'preview-bomb', 'line-ready');
   }
 
   function finishDrag(clientX, clientY) {
@@ -967,9 +1341,10 @@
     playGameOverSound();
     vibrate(100);
     overlay.classList.remove('hide');
-    document.querySelector('#overlay h2').textContent = 'Naxış tamamlandı';
-    overlayText.textContent = `Xal: ${score}` + (score >= best && score > 0 ? ' — yeni ən yaxşı nəticə!' : '');
-    overlayBtn.textContent = 'Yenidən toxu';
+    overlayMode = 'gameover';
+    lastGameScore = score;
+    lastIsNewBest = (score >= best && score > 0);
+    renderOverlayTexts();
     renderThemeRow();
   }
 
@@ -978,6 +1353,13 @@
     renderGrid();
     score = 0;
     combo = 0;
+    noClearStreak = 0;
+    nextIceAt = 400;
+    hammerUses = 2;
+    hammerActive = false;
+    boardWrap.classList.remove('hammer-mode');
+    hammerBtn.classList.remove('active');
+    updateHammerUI();
     scoreEl.textContent = score;
     comboEl.textContent = combo;
     gameOver = false;
@@ -993,7 +1375,8 @@
   buildBoardDOM();
   initGrid();
   renderGrid();
-  renderThemeRow();
+  updateHammerUI();
+  applyLanguage();
 
   window.addEventListener('resize', () => {
     const rect = boardEl.getBoundingClientRect();
