@@ -26,6 +26,7 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  .hide { display: none !important; }
   html, body {
     height: 100%;
     margin: 0;
@@ -59,20 +60,24 @@
   #titleRow h1 { font-family: 'Newsreader', serif; font-weight: 700; font-size: 26px; margin: 0; letter-spacing: 0.5px; color: var(--gold); }
   #titleRow .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); opacity: 0.5; }
   #titleRow .sub { font-size: 12px; color: var(--cream-dim); font-style: italic; font-family: 'Newsreader', serif; }
-  #btnGroup { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; gap: 6px; }
+  #btnGroup { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; gap: 5px; }
   .iconBtn {
     background: var(--surface);
     border: 1px solid var(--gold-soft);
     border-radius: 50%;
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     padding: 0;
     color: var(--cream);
+    flex-shrink: 0;
+  }
+  @media (max-width: 360px) {
+    #titleRow .sub, #titleRow .dot { display: none; }
   }
   .iconBtn:active { transform: scale(0.92); }
 
@@ -108,9 +113,39 @@
   .corner.bl { bottom: 3px; left: 3px; border-right: none; border-top: none; }
   .corner.br { bottom: 3px; right: 3px; border-left: none; border-top: none; }
 
+  .carpet-border-strip {
+    position: absolute;
+    left: 10px; right: 10px;
+    height: 6px;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(135deg, var(--gold) 0 3px, transparent 3px 7px),
+      repeating-linear-gradient(45deg, var(--gold) 0 3px, transparent 3px 7px);
+    opacity: 0.3;
+    z-index: 1;
+  }
+  .carpet-border-strip.top { top: 3px; }
+  .carpet-border-strip.bottom { bottom: 3px; }
+
+  #fringeRow { display: flex; justify-content: space-evenly; width: 100%; height: 8px; margin-top: -2px; flex-shrink: 0; }
+  .fringe-strand {
+    width: 0; height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 7px solid var(--gold-soft);
+    opacity: 0.55;
+  }
+
   #board { display: grid; width: 100%; height: 100%; gap: 3px; position: relative; }
-  .cell { position: relative; background: var(--grid-empty); border-radius: 4px; border: 1px solid var(--grid-border); transition: background 0.08s, transform 0.15s; }
-  .cell.filled { border: none; }
+  .cell {
+    position: relative;
+    background-color: var(--grid-empty);
+    background-image: repeating-linear-gradient(45deg, rgba(212,162,58,0.05) 0px, rgba(212,162,58,0.05) 2px, transparent 2px, transparent 6px);
+    border-radius: 4px;
+    border: 1px solid var(--grid-border);
+    transition: background 0.08s, transform 0.15s;
+  }
+  .cell.filled { border: none; box-shadow: inset 0 2px 3px rgba(255,255,255,0.28), inset 0 -3px 4px rgba(0,0,0,0.25); }
   .cell.preview { outline: 2px solid var(--gold); outline-offset: -2px; }
   .cell.preview-bad { outline: 2px solid var(--danger); outline-offset: -2px; }
   .cell.preview-bomb { outline: 2px solid #ff8a3d; outline-offset: -2px; }
@@ -196,6 +231,19 @@
     45% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
     100% { transform: translate(-50%, -65%) scale(0.95) rotate(0deg); opacity: 0; }
   }
+
+  #modeRow { display: flex; justify-content: center; gap: 7px; margin-bottom: 4px; flex-wrap: wrap; }
+  .mode-btn {
+    background: var(--surface-strong);
+    border: 1px solid var(--gold-soft);
+    color: var(--cream);
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+  }
+  .mode-btn.active { background: linear-gradient(135deg, var(--gold), #b8842a); color: #241533; border-color: var(--gold); font-weight: 700; }
 
   #themeRow {
     display: flex;
@@ -336,15 +384,28 @@
   .help-icon { font-size: 20px; flex-shrink: 0; width: 26px; text-align: center; }
   #helpCloseBtn { width: 100%; margin-top: 6px; }
 
-  #toolRow { display: flex; justify-content: center; width: 100%; flex-shrink: 0; }
+  #toolRow { display: flex; justify-content: center; gap: 7px; width: 100%; flex-shrink: 0; flex-wrap: wrap; }
+  #boardWrap.bomb-mode { outline: 3px solid #c1432e; outline-offset: 2px; }
+  #dailyBanner {
+    width: 100%;
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--gold);
+    background: var(--surface);
+    border: 1px solid var(--gold-soft);
+    border-radius: 12px;
+    padding: 5px 10px;
+    display: none;
+    flex-shrink: 0;
+  }
   .tool-btn {
-    display: flex; align-items: center; gap: 7px;
+    display: flex; align-items: center; gap: 6px;
     background: var(--surface-strong);
     border: 1px solid var(--gold-soft);
     color: var(--cream);
-    padding: 7px 16px;
+    padding: 7px 12px;
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     font-family: 'Manrope', sans-serif;
   }
@@ -411,12 +472,15 @@
     <span class="dot"></span>
     <span class="sub" id="titleSub">naxış toxu</span>
     <div id="btnGroup">
+      <button class="iconBtn" id="homeBtn" title="Ana ekrana dön">🏠</button>
       <button class="iconBtn lang" id="langBtn" title="Dil">AZ</button>
       <button class="iconBtn" id="helpBtn" title="Necə oynanılır">❓</button>
       <button class="iconBtn" id="shareBtn" title="Paylaş">📤</button>
       <button class="iconBtn" id="soundToggle" title="Səsi aç/bağla">🔊</button>
     </div>
   </div>
+
+  <div id="dailyBanner"></div>
 
   <div id="hud">
     <div class="box"><div class="label" id="labelScore">Xal</div><div class="value" id="score">0</div></div>
@@ -429,19 +493,31 @@
     <div class="corner tr"></div>
     <div class="corner bl"></div>
     <div class="corner br"></div>
+    <div class="carpet-border-strip top"></div>
+    <div class="carpet-border-strip bottom"></div>
     <div id="board"></div>
     <div id="overlay">
       <h2>Xalça</h2>
       <p id="overlayText">Naxış parçalarını şəbəkəyə sürüşdür. Bir sətri və ya sütunu tamamlayanda naxış toxunur və açılır. Bəzən 💥 bomba parça çıxır — onu yerləşdirdiyin yerin ətrafı dərhal təmizlənir!</p>
+      <div id="modeRow">
+        <button class="mode-btn" data-mode="zen">🌿 <span id="modeZenLabel">Zen</span></button>
+        <button class="mode-btn" data-mode="normal">⚖️ <span id="modeNormalLabel">Normal</span></button>
+        <button class="mode-btn" data-mode="hard">🔥 <span id="modeHardLabel">Çətin</span></button>
+      </div>
       <div id="themeRow"></div>
       <div id="overlayButtons">
         <button id="overlayBtn">Toxumağa başla</button>
+        <button id="overlayBtn2" class="secondary hide">Yenidən başla</button>
       </div>
     </div>
   </div>
 
+  <div id="fringeRow"></div>
+
   <div id="toolRow">
     <button class="tool-btn" id="hammerBtn">🔨 <span class="count-badge" id="hammerCount">2</span></button>
+    <button class="tool-btn" id="bombBtn">💣 <span class="count-badge" id="bombCount">2</span></button>
+    <button class="tool-btn" id="shuffleBtn">🔄 <span class="count-badge" id="shuffleCount">2</span></button>
   </div>
 
   <div id="trayWrap">
@@ -480,6 +556,8 @@
   const overlay = document.getElementById('overlay');
   const overlayText = document.getElementById('overlayText');
   const overlayBtn = document.getElementById('overlayBtn');
+  const overlayBtn2 = document.getElementById('overlayBtn2');
+  const homeBtn = document.getElementById('homeBtn');
   const scoreEl = document.getElementById('score');
   const bestEl = document.getElementById('best');
   const comboEl = document.getElementById('combo');
@@ -492,6 +570,10 @@
   const langBtn = document.getElementById('langBtn');
   const hammerBtn = document.getElementById('hammerBtn');
   const hammerCountEl = document.getElementById('hammerCount');
+  const bombBtn = document.getElementById('bombBtn');
+  const bombCountEl = document.getElementById('bombCount');
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  const shuffleCountEl = document.getElementById('shuffleCount');
   const adModal = document.getElementById('adModal');
   const adWatchBtn = document.getElementById('adWatchBtn');
   const adCancelBtn = document.getElementById('adCancelBtn');
@@ -510,16 +592,19 @@
   const STRINGS = {
     az: {
       sub: 'naxış toxu', xal: 'Xal', best: 'Ən yaxşı', combo: 'Silsilə',
-      introText: 'Naxış parçalarını şəbəkəyə sürüşdür. Bir sətri və ya sütunu tamamlayanda naxış toxunur və açılır. Bəzən 💥 bomba parça çıxır!',
+      introText: 'Naxış parçalarını şəbəkəyə sürüşdür, sətir/sütun tamamlayaraq toxu. Aşağıda rejim (Zen — rahat, Çətin — zorlu) və tema seç.',
       startBtn: 'Toxumağa başla', footer: 'Bir parçaya toxunub şəbəkəyə sürüşdür',
       gameOverTitle: 'Naxış tamamlandı', playAgainBtn: 'Yenidən toxu',
       newBest: ' — yeni ən yaxşı nəticə!', scoreLabel: 'Xal: ',
       helpTitle: 'Necə oynanılır', helpClose: 'Anladım',
+      pausedTitle: 'Fasilə', resumeBtn: 'Davam et', restartBtn: 'Yenidən başla', backToHomeBtn: 'Ana ekrana dön',
+      modeZen: 'Zen', modeNormal: 'Normal', modeHard: 'Çətin',
+      help10t: 'Qarışdırma aləti', help10d: 'Aşağıdakı 3 parçanı yenisi ilə əvəz et. Hər oyunda 2 pulsuz haqqın var, sonra reklamla yenisini qazanırsan.',
       help1t: 'Parçanı yerləşdir', help1d: 'Aşağıdakı 3 parçadan birinə toxun, şəbəkəyə sürüşdür, barmağını qaldıranda yerləşəcək.',
       help2t: 'Sətir/sütun tamamla', help2d: 'Bir sıranı tamamən doldursan, o sıra avtomatik təmizlənir və xal qazanırsan.',
       help3t: 'Silsilə (kombo)', help3d: 'Ard-arda sıra təmizləsən, bonus xal artır, ekranda "Əla!", "Möhtəşəm!" kimi sözlər çıxır.',
       help7t: 'Çəkic aləti', help7d: 'Çəkici seçib istənilən bir xananı sil. Hər oyunda 2 pulsuz haqqın var, sonra reklama baxaraq yenisini qazanırsan.',
-      help4t: 'Bomba parça', help4d: 'Bəzən tünd rəngli bomba parça çıxır — yerləşdirdiyin yerin 3x3 ətrafı dərhal partlayıb təmizlənir.',
+      help4t: 'Bomba aləti', help4d: 'Bombanı seç, istənilən yerə toxun — 3x3 sahə dərhal partlayıb təmizlənir. Hər oyunda 2 pulsuz haqqın var, sonra reklamla yenisini qazanırsan.',
       help8t: 'Buz kublar', help8d: 'Buzlu xanalar tam açılmaq üçün iki dəfə sətir/sütun təmizləməsindən keçməlidir.',
       help5t: 'Tam təmizləmə', help5d: 'Bütün şəbəkəni boşaltsan, böyük bonus və xüsusi animasiya qazanırsan.',
       help6t: 'Yeni temalar', help6d: 'Xal topladıqca yeni rəng palitraları açılır — başlanğıc ekranında seçə bilərsən.',
@@ -527,24 +612,28 @@
       themeLockedSuffix: ' xal lazım', themeUnlockedToast: '🎨 Yeni tema açıldı: ',
       copiedToast: 'Mətn kopyalandı!', shareUnsupported: 'Paylaşım dəstəklənmir.',
       fullClearTitle: '✨ Xalça tamamlandı! ✨', fullClearBonus: (b) => `+${b} bonus xal`,
-      watchAdTitle: 'Reklama bax', watchAdDesc: 'Pulsuz çəkic haqqı qazanmaq üçün qısa reklama bax (hazırda sınaq rejimi).',
-      watchAdBtn: 'Reklama bax', watchAdLoading: 'Reklam yüklənir...', watchAdGranted: '+1 çəkic haqqı qazandın!',
+      watchAdTitle: 'Reklama bax', watchAdDesc: 'Pulsuz haqq qazanmaq üçün qısa reklama bax (hazırda sınaq rejimi).',
+      watchAdBtn: 'Reklama bax', watchAdLoading: 'Reklam yüklənir...', watchAdGranted: '+1 haqq qazandın!',
       cancelBtn: 'Ləğv et',
       shareText: (s) => `Xalça oyununda ${s} xal topladım! 🧶 Sən bacararsan?`,
       comboWords: ['', 'Gözəl!', 'Əla!', 'Möhtəşəm!', 'Heyrətamiz!', 'Dahiyanə!', 'Əfsanəvi!'],
+      bonusDayLabel: 'xal günü', streakLabel: 'gün ardıcıl',
     },
     tr: {
       sub: 'deseni ör', xal: 'Puan', best: 'En iyi', combo: 'Seri',
-      introText: 'Desen parçalarını ızgaraya sürükle. Bir satırı veya sütunu tamamladığında desen dokunur ve açılır. Bazen 💥 bomba parça çıkar!',
+      introText: 'Desen parçalarını ızgaraya sürükle, satır/sütun tamamlayarak dok. Aşağıdan mod (Zen — rahat, Zor — zorlu) ve tema seç.',
       startBtn: 'Dokumaya başla', footer: 'Bir parçaya dokunup ızgaraya sürükle',
       gameOverTitle: 'Desen tamamlandı', playAgainBtn: 'Tekrar oyna',
       newBest: ' — yeni en iyi skor!', scoreLabel: 'Puan: ',
       helpTitle: 'Nasıl oynanır', helpClose: 'Anladım',
+      pausedTitle: 'Duraklat', resumeBtn: 'Devam et', restartBtn: 'Yeniden başla', backToHomeBtn: 'Ana menüye dön',
+      modeZen: 'Zen', modeNormal: 'Normal', modeHard: 'Zor',
+      help10t: 'Karıştırma aracı', help10d: 'Aşağıdaki 3 parçayı yenisiyle değiştir. Her oyunda 2 ücretsiz hakkın var, sonra reklamla yenisini kazanırsın.',
       help1t: 'Parçayı yerleştir', help1d: 'Aşağıdaki 3 parçadan birine dokun, ızgaraya sürükle, parmağını kaldırınca yerleşecek.',
       help2t: 'Satır/sütun tamamla', help2d: 'Bir satırı tamamen doldurursan, otomatik temizlenir ve puan kazanırsın.',
       help3t: 'Seri (kombo)', help3d: 'Art arda satır temizlersen, bonus puan artar, ekranda "Harika!", "Muhteşem!" gibi kelimeler çıkar.',
       help7t: 'Çekiç aracı', help7d: 'Çekici seç, istediğin bir hücreyi sil. Her oyunda 2 ücretsiz hakkın var, sonra reklam izleyerek yenisini kazanırsın.',
-      help4t: 'Bomba parça', help4d: 'Bazen koyu renkli bomba parça çıkar — yerleştirdiğin yerin 3x3 çevresi hemen patlayıp temizlenir.',
+      help4t: 'Bomba aracı', help4d: 'Bombayı seç, herhangi bir yere dokun — 3x3 alan hemen patlayıp temizlenir. Her oyunda 2 ücretsiz hakkın var, sonra reklamla yenisini kazanırsın.',
       help8t: 'Buz küpleri', help8d: 'Buzlu hücreler tam açılmak için iki kez satır/sütun temizlemesinden geçmeli.',
       help5t: 'Tam temizleme', help5d: 'Tüm ızgarayı boşaltırsan, büyük bonus ve özel animasyon kazanırsın.',
       help6t: 'Yeni temalar', help6d: 'Puan topladıkça yeni renk paletleri açılır — başlangıç ekranında seçebilirsin.',
@@ -552,24 +641,28 @@
       themeLockedSuffix: ' puan gerekli', themeUnlockedToast: '🎨 Yeni tema açıldı: ',
       copiedToast: 'Metin kopyalandı!', shareUnsupported: 'Paylaşım desteklenmiyor.',
       fullClearTitle: '✨ Desen tamamlandı! ✨', fullClearBonus: (b) => `+${b} bonus puan`,
-      watchAdTitle: 'Reklamı izle', watchAdDesc: 'Ücretsiz çekiç hakkı kazanmak için kısa bir reklam izle (şu an deneme modu).',
-      watchAdBtn: 'Reklamı izle', watchAdLoading: 'Reklam yükleniyor...', watchAdGranted: '+1 çekiç hakkı kazandın!',
+      watchAdTitle: 'Reklamı izle', watchAdDesc: 'Ücretsiz hak kazanmak için kısa bir reklam izle (şu an deneme modu).',
+      watchAdBtn: 'Reklamı izle', watchAdLoading: 'Reklam yükleniyor...', watchAdGranted: '+1 hak kazandın!',
       cancelBtn: 'İptal',
       shareText: (s) => `Xalça oyununda ${s} puan topladım! 🧶 Sen yapabilir misin?`,
       comboWords: ['', 'Güzel!', 'Harika!', 'Muhteşem!', 'Şaşırtıcı!', 'Dahiyane!', 'Efsanevi!'],
+      bonusDayLabel: 'puan günü', streakLabel: 'gün üst üste',
     },
     en: {
       sub: 'weave the pattern', xal: 'Score', best: 'Best', combo: 'Streak',
-      introText: 'Drag pattern pieces onto the grid. Complete a row or column to weave and clear it. Sometimes a 💥 bomb piece appears!',
+      introText: 'Drag pattern pieces onto the grid, complete rows/columns to weave them. Pick a mode (Zen — relaxed, Hard — challenging) and a theme below.',
       startBtn: 'Start weaving', footer: 'Touch a piece and drag it onto the grid',
       gameOverTitle: 'Pattern complete', playAgainBtn: 'Weave again',
       newBest: ' — new best score!', scoreLabel: 'Score: ',
       helpTitle: 'How to play', helpClose: 'Got it',
+      pausedTitle: 'Paused', resumeBtn: 'Resume', restartBtn: 'Restart', backToHomeBtn: 'Back to home',
+      modeZen: 'Zen', modeNormal: 'Normal', modeHard: 'Hard',
+      help10t: 'Shuffle tool', help10d: 'Swap out the current 3 pieces for new ones. 2 free uses per game, then watch an ad for more.',
       help1t: 'Place a piece', help1d: 'Touch one of the 3 pieces below, drag it onto the grid, release to place it.',
       help2t: 'Complete a row/column', help2d: 'Fill an entire row or column and it clears automatically, earning points.',
       help3t: 'Streak (combo)', help3d: 'Clear rows back to back for bonus points — words like "Nice!", "Amazing!" appear.',
       help7t: 'Hammer tool', help7d: 'Select the hammer and remove any single cell. 2 free uses per game, then watch an ad for more.',
-      help4t: 'Bomb piece', help4d: 'A dark bomb piece sometimes appears — it instantly clears the 3x3 area around where you place it.',
+      help4t: 'Bomb tool', help4d: 'Select the bomb and tap anywhere — the 3x3 area instantly clears. 2 free uses per game, then watch an ad for more.',
       help8t: 'Ice cubes', help8d: 'Frosted cells need two line clears to fully melt away.',
       help5t: 'Full clear', help5d: 'Empty the entire grid for a big bonus and a special animation.',
       help6t: 'New themes', help6d: 'Earn points to unlock new color palettes — pick one from the start screen.',
@@ -577,11 +670,12 @@
       themeLockedSuffix: ' points needed', themeUnlockedToast: '🎨 New theme unlocked: ',
       copiedToast: 'Text copied!', shareUnsupported: 'Sharing is not supported.',
       fullClearTitle: '✨ Pattern complete! ✨', fullClearBonus: (b) => `+${b} bonus points`,
-      watchAdTitle: 'Watch ad', watchAdDesc: 'Watch a short ad to earn a free hammer use (currently a test mode).',
-      watchAdBtn: 'Watch ad', watchAdLoading: 'Loading ad...', watchAdGranted: '+1 hammer use earned!',
+      watchAdTitle: 'Watch ad', watchAdDesc: 'Watch a short ad to earn a free use (currently a test mode).',
+      watchAdBtn: 'Watch ad', watchAdLoading: 'Loading ad...', watchAdGranted: '+1 use earned!',
       cancelBtn: 'Cancel',
       shareText: (s) => `I scored ${s} points in Xalça! 🧶 Can you beat it?`,
       comboWords: ['', 'Nice!', 'Great!', 'Awesome!', 'Amazing!', 'Incredible!', 'Legendary!'],
+      bonusDayLabel: 'score day', streakLabel: 'day streak',
     },
   };
   const LANG_CYCLE = ['az', 'tr', 'en'];
@@ -602,7 +696,7 @@
 
   const HELP_ITEMS = [
     { icon: '🧩', key: 'help1' }, { icon: '✅', key: 'help2' }, { icon: '🔥', key: 'help3' },
-    { icon: '🔨', key: 'help7' }, { icon: '💥', key: 'help4' }, { icon: '🧊', key: 'help8' },
+    { icon: '🔨', key: 'help7' }, { icon: '💥', key: 'help4' }, { icon: '🔄', key: 'help10' }, { icon: '🧊', key: 'help8' },
     { icon: '✨', key: 'help5' }, { icon: '🎨', key: 'help6' }, { icon: '⛔', key: 'help9' },
   ];
   function renderHelp() {
@@ -618,14 +712,25 @@
   let lastIsNewBest = false;
   function renderOverlayTexts() {
     const h2 = document.querySelector('#overlay h2');
+    const overlayBtn2El = document.getElementById('overlayBtn2');
+    const modeRowEl = document.getElementById('modeRow');
+    modeRowEl.classList.toggle('hide', overlayMode === 'paused');
     if (overlayMode === 'start') {
       h2.textContent = 'Xalça';
       overlayText.textContent = t('introText');
       overlayBtn.textContent = t('startBtn');
+      overlayBtn2El.classList.add('hide');
+    } else if (overlayMode === 'paused') {
+      h2.textContent = t('pausedTitle');
+      overlayText.textContent = t('scoreLabel') + score;
+      overlayBtn.textContent = t('resumeBtn');
+      overlayBtn2El.textContent = t('backToHomeBtn');
+      overlayBtn2El.classList.remove('hide');
     } else {
       h2.textContent = t('gameOverTitle');
       overlayText.textContent = t('scoreLabel') + lastGameScore + (lastIsNewBest ? t('newBest') : '');
       overlayBtn.textContent = t('playAgainBtn');
+      overlayBtn2El.classList.add('hide');
     }
   }
 
@@ -638,6 +743,8 @@
     renderOverlayTexts();
     renderHelp();
     renderThemeRow();
+    renderModeRow();
+    renderDailyBanner();
   }
 
   const THEMES = [
@@ -680,6 +787,22 @@
       renderThemeRow();
     }
   }
+
+  function renderModeRow() {
+    document.getElementById('modeZenLabel').textContent = t('modeZen');
+    document.getElementById('modeNormalLabel').textContent = t('modeNormal');
+    document.getElementById('modeHardLabel').textContent = t('modeHard');
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === gameMode);
+    });
+  }
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      gameMode = btn.dataset.mode;
+      localStorage.setItem('xalcaMode', gameMode);
+      renderModeRow();
+    });
+  });
 
   function renderThemeRow() {
     const row = document.getElementById('themeRow');
@@ -725,8 +848,46 @@
   let soundOn = true;
   let hammerUses = 2;
   let hammerActive = false;
+  let bombUses = 2;
+  let bombActive = false;
+  let shuffleUses = 2;
+  let adTarget = 'hammer';
+  let paused = false;
+  let gameMode = localStorage.getItem('xalcaMode') || 'normal';
   let noClearStreak = 0;
   let nextIceAt = 400;
+
+  const DAY_MULTIPLIERS = [2, 1, 1, 1.5, 1, 1, 2]; // Sun, Mon, Tue, Wed, Thu, Fri, Sat
+  const dayMultiplier = DAY_MULTIPLIERS[new Date().getDay()];
+  function addScore(amount) { score += Math.round(amount * dayMultiplier); }
+
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function computeStreak() {
+    const today = todayStr();
+    const last = localStorage.getItem('xalcaLastPlayed');
+    let streak = parseInt(localStorage.getItem('xalcaStreak') || '0', 10);
+    if (last !== today) {
+      const y = new Date(); y.setDate(y.getDate() - 1);
+      const yStr = y.getFullYear() + '-' + String(y.getMonth() + 1).padStart(2, '0') + '-' + String(y.getDate()).padStart(2, '0');
+      streak = (last === yStr) ? streak + 1 : 1;
+      localStorage.setItem('xalcaLastPlayed', today);
+      localStorage.setItem('xalcaStreak', String(streak));
+    }
+    return streak;
+  }
+  const streakCount = computeStreak();
+
+  function renderDailyBanner() {
+    const el = document.getElementById('dailyBanner');
+    const parts = [];
+    if (dayMultiplier > 1) parts.push(`✨ ${dayMultiplier}x ${t('bonusDayLabel')}`);
+    if (streakCount > 1) parts.push(`🔥 ${streakCount} ${t('streakLabel')}`);
+    el.textContent = parts.join('   •   ');
+    el.style.display = parts.length ? 'block' : 'none';
+  }
 
   bestEl.textContent = best;
 
@@ -771,6 +932,7 @@
   }
   function playGameOverSound() { playTone(300, 0.3, 'sawtooth', 0.12); playTone(200, 0.4, 'sawtooth', 0.1, 0.15); }
   function playHammerSound() { playTone(150, 0.12, 'square', 0.2); playTone(80, 0.15, 'sine', 0.15, 0.02); }
+  function playShuffleSound() { playTone(320, 0.1, 'triangle', 0.15); playTone(420, 0.1, 'triangle', 0.15, 0.08); playTone(520, 0.12, 'triangle', 0.15, 0.16); }
 
   function startMusic() {
     if (musicTimer) return;
@@ -779,10 +941,9 @@
     musicTimer = setInterval(() => {
       if (!soundOn) return;
       const note = PENTATONIC[(step * 3) % PENTATONIC.length];
-      playTone(note / 2, 1.1, 'sine', 0.045);
-      if (step % 4 === 0) playTone(PENTATONIC[step % PENTATONIC.length], 0.8, 'triangle', 0.03, 0.3);
+      playTone(note / 2, 2.4, 'sine', 0.022);
       step++;
-    }, 900);
+    }, 1900);
   }
   function stopMusic() { if (musicTimer) { clearInterval(musicTimer); musicTimer = null; } }
   function updateSoundToggleUI() { soundToggleBtn.textContent = soundOn ? '🔊' : '🔇'; }
@@ -884,20 +1045,22 @@
     return filled / (SIZE * SIZE);
   }
   function getDifficultyTier() { return Math.floor(score / 500); }
-  function isInRelief() { return noClearStreak >= 5 || occupancyRatio() > 0.75; }
+  function isInRelief() {
+    if (gameMode === 'zen') return noClearStreak >= 3 || occupancyRatio() > 0.65;
+    const streakLimit = gameMode === 'hard' ? 7 : 5;
+    const occLimit = gameMode === 'hard' ? 0.85 : 0.75;
+    return noClearStreak >= streakLimit || occupancyRatio() > occLimit;
+  }
 
   function makePiece() {
     const relief = isInRelief();
     const tier = getDifficultyTier();
-    const bombChance = relief ? 0.12 : Math.max(0.04, 0.08 - tier * 0.005);
-    const isBomb = Math.random() < bombChance;
-    if (isBomb) return { shape: [[1]], color: BOMB_COLOR, bomb: true };
-
     let pool = SHAPES;
     if (relief) {
       pool = SHAPES.filter(s => shapeCells(s).length <= 3);
-    } else if (tier >= 3) {
-      pool = SHAPES.filter(s => shapeCells(s).length >= 3);
+    } else if (gameMode !== 'zen') {
+      const tierThreshold = gameMode === 'hard' ? 2 : 3;
+      if (tier >= tierThreshold) pool = SHAPES.filter(s => shapeCells(s).length >= 3);
     }
     if (!pool.length) pool = SHAPES;
     const shape = pool[Math.floor(Math.random() * pool.length)];
@@ -914,11 +1077,15 @@
   }
 
   function maybeSpawnIce() {
+    if (gameMode === 'zen') return;
     if (isInRelief()) return;
     if (score >= nextIceAt) {
-      spawnIceObstacle();
+      const count = gameMode === 'hard' ? 3 : 1;
+      for (let i = 0; i < count; i++) spawnIceObstacle();
       const tier = getDifficultyTier();
-      const interval = Math.max(200, 400 - tier * 30);
+      const baseInterval = gameMode === 'hard' ? 250 : 400;
+      const minInterval = gameMode === 'hard' ? 120 : 200;
+      const interval = Math.max(minInterval, baseInterval - tier * 30);
       nextIceAt = score + interval;
     }
   }
@@ -1156,45 +1323,101 @@
     }
   }
 
-  // ========== ÇƏKİC ALƏTİ ==========
+  // ========== ÇƏKİC VƏ BOMBA ALƏTLƏRİ ==========
   function updateHammerUI() {
     hammerCountEl.textContent = hammerUses;
     hammerBtn.classList.toggle('depleted', hammerUses <= 0);
   }
+  function updateBombUI() {
+    bombCountEl.textContent = bombUses;
+    bombBtn.classList.toggle('depleted', bombUses <= 0);
+  }
+  function updateShuffleUI() {
+    shuffleCountEl.textContent = shuffleUses;
+    shuffleBtn.classList.toggle('depleted', shuffleUses <= 0);
+  }
+  function performShuffle() {
+    tray = [null, null, null];
+    refillTray();
+    playShuffleSound();
+    vibrate(20);
+  }
+  shuffleBtn.addEventListener('click', () => {
+    if (gameOver || paused) return;
+    if (shuffleUses <= 0) { openWatchAdModal('shuffle'); return; }
+    performShuffle();
+    shuffleUses--;
+    updateShuffleUI();
+  });
+  function deactivateTools() {
+    hammerActive = false;
+    bombActive = false;
+    boardWrap.classList.remove('hammer-mode', 'bomb-mode');
+    hammerBtn.classList.remove('active');
+    bombBtn.classList.remove('active');
+  }
 
   hammerBtn.addEventListener('click', () => {
-    if (gameOver) return;
-    if (hammerUses <= 0) { openWatchAdModal(); return; }
-    hammerActive = !hammerActive;
-    boardWrap.classList.toggle('hammer-mode', hammerActive);
-    hammerBtn.classList.toggle('active', hammerActive);
+    if (gameOver || paused) return;
+    if (hammerUses <= 0) { openWatchAdModal('hammer'); return; }
+    const turningOn = !hammerActive;
+    deactivateTools();
+    if (turningOn) {
+      hammerActive = true;
+      boardWrap.classList.add('hammer-mode');
+      hammerBtn.classList.add('active');
+    }
+  });
+
+  bombBtn.addEventListener('click', () => {
+    if (gameOver || paused) return;
+    if (bombUses <= 0) { openWatchAdModal('bomb'); return; }
+    const turningOn = !bombActive;
+    deactivateTools();
+    if (turningOn) {
+      bombActive = true;
+      boardWrap.classList.add('bomb-mode');
+      bombBtn.classList.add('active');
+    }
   });
 
   function onBoardPointerDown(e) {
-    if (!hammerActive || gameOver) return;
+    if (gameOver || paused) return;
+    if (!hammerActive && !bombActive) return;
     const rect = boardEl.getBoundingClientRect();
     const cpx = rect.width / SIZE;
     const c = Math.floor((e.clientX - rect.left) / cpx);
     const r = Math.floor((e.clientY - rect.top) / cpx);
     if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return;
-    if (grid[r][c] !== null) {
-      grid[r][c] = null;
-      playHammerSound();
-      vibrate(30);
-      cellEls[r][c].classList.add('exploding');
-      setTimeout(() => { cellEls[r][c].classList.remove('exploding'); renderGrid(); }, 300);
-      hammerUses--;
-      updateHammerUI();
-      hammerActive = false;
-      boardWrap.classList.remove('hammer-mode');
-      hammerBtn.classList.remove('active');
+
+    if (hammerActive) {
+      if (grid[r][c] !== null) {
+        grid[r][c] = null;
+        playHammerSound();
+        vibrate(30);
+        cellEls[r][c].classList.add('exploding');
+        setTimeout(() => { cellEls[r][c].classList.remove('exploding'); renderGrid(); }, 300);
+        hammerUses--;
+        updateHammerUI();
+        deactivateTools();
+        if (!anyPieceFits()) endGame();
+      }
+    } else if (bombActive) {
+      explodeBomb(r, c);
+      renderGrid();
+      scoreEl.textContent = score;
+      bombUses--;
+      updateBombUI();
+      deactivateTools();
+      checkThemeUnlocks(score);
       if (!anyPieceFits()) endGame();
     }
   }
   boardEl.addEventListener('pointerdown', onBoardPointerDown);
 
   // ========== REKLAM SİMULYASİYASI (rewarded ad — real şəbəkə sonra qoşulacaq) ==========
-  function openWatchAdModal() {
+  function openWatchAdModal(target) {
+    adTarget = target;
     document.getElementById('adTitleEl').textContent = t('watchAdTitle');
     document.getElementById('adDescEl').textContent = t('watchAdDesc');
     adWatchBtn.textContent = t('watchAdBtn');
@@ -1214,8 +1437,9 @@
       requestAnimationFrame(() => { adProgressBar.style.width = '100%'; });
     });
     setTimeout(() => {
-      hammerUses += 1;
-      updateHammerUI();
+      if (adTarget === 'bomb') { bombUses += 1; updateBombUI(); }
+      else if (adTarget === 'shuffle') { shuffleUses += 1; updateShuffleUI(); }
+      else { hammerUses += 1; updateHammerUI(); }
       adModal.classList.add('hide');
       adWatchBtn.disabled = false;
       showToast(t('watchAdGranted'));
@@ -1228,7 +1452,7 @@
 
   function attachDrag(slot, index) {
     slot.onpointerdown = (e) => {
-      if (gameOver || !tray[index]) return;
+      if (gameOver || paused || !tray[index]) return;
       e.preventDefault();
       const piece = tray[index];
       const rect = boardEl.getBoundingClientRect();
@@ -1354,12 +1578,15 @@
     score = 0;
     combo = 0;
     noClearStreak = 0;
-    nextIceAt = 400;
-    hammerUses = 2;
-    hammerActive = false;
-    boardWrap.classList.remove('hammer-mode');
-    hammerBtn.classList.remove('active');
+    nextIceAt = gameMode === 'hard' ? 250 : 400;
+    hammerUses = gameMode === 'hard' ? 1 : 2;
+    bombUses = gameMode === 'hard' ? 1 : 2;
+    shuffleUses = gameMode === 'hard' ? 1 : 2;
+    paused = false;
+    deactivateTools();
     updateHammerUI();
+    updateBombUI();
+    updateShuffleUI();
     scoreEl.textContent = score;
     comboEl.textContent = combo;
     gameOver = false;
@@ -1369,13 +1596,47 @@
     if (soundOn) startMusic();
   }
 
-  overlayBtn.addEventListener('click', startGame);
+  overlayBtn.addEventListener('click', () => {
+    if (overlayMode === 'paused') {
+      paused = false;
+      overlay.classList.add('hide');
+      if (soundOn) startMusic();
+    } else {
+      startGame();
+    }
+  });
+  overlayBtn2.addEventListener('click', () => {
+    if (overlayMode === 'paused') {
+      overlayMode = 'start';
+      renderOverlayTexts();
+    } else {
+      startGame();
+    }
+  });
+
+  homeBtn.addEventListener('click', () => {
+    if (!overlay.classList.contains('hide')) return; // artıq overlay açıqdır
+    paused = true;
+    overlayMode = 'paused';
+    overlay.classList.remove('hide');
+    renderOverlayTexts();
+    stopMusic();
+  });
+
+  const fringeRow = document.getElementById('fringeRow');
+  for (let i = 0; i < 18; i++) {
+    const strand = document.createElement('div');
+    strand.className = 'fringe-strand';
+    fringeRow.appendChild(strand);
+  }
 
   applyTheme(getSelectedThemeId());
   buildBoardDOM();
   initGrid();
   renderGrid();
   updateHammerUI();
+  updateBombUI();
+  updateShuffleUI();
   applyLanguage();
 
   window.addEventListener('resize', () => {
