@@ -136,35 +136,43 @@
     opacity: 0.55;
   }
 
-  #board { display: grid; width: 100%; height: 100%; gap: 3px; position: relative; }
+  #board {
+    display: grid; width: 100%; height: 100%; gap: 3px; position: relative;
+    background-image: repeating-linear-gradient(45deg, rgba(212,162,58,0.05) 0px, rgba(212,162,58,0.05) 2px, transparent 2px, transparent 6px);
+    border-radius: 6px;
+  }
   .cell {
     position: relative;
     background-color: var(--grid-empty);
-    background-image: repeating-linear-gradient(45deg, rgba(212,162,58,0.05) 0px, rgba(212,162,58,0.05) 2px, transparent 2px, transparent 6px);
     border-radius: 4px;
     border: 1px solid var(--grid-border);
-    transition: background 0.08s, transform 0.15s;
   }
   .cell.filled { border: none; box-shadow: inset 0 2px 3px rgba(255,255,255,0.28), inset 0 -3px 4px rgba(0,0,0,0.25); }
+  .cell.just-placed { transition: transform 0.15s; }
   .cell.preview { outline: 2px solid var(--gold); outline-offset: -2px; }
   .cell.preview-bad { outline: 2px solid var(--danger); outline-offset: -2px; }
   .cell.preview-bomb { outline: 2px solid #ff8a3d; outline-offset: -2px; }
-  .cell.line-ready { background: rgba(255, 215, 90, 0.4) !important; }
-  .cell.exploding { animation: explode 0.3s ease-out forwards; }
-  .cell.ice::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: rgba(200, 240, 255, 0.55);
-    border-radius: 4px;
+  .cell.line-ready {
+    background: rgba(255, 221, 50, 0.85) !important;
+    outline: 2px solid #fff3b0;
+    outline-offset: -2px;
+    box-shadow: 0 0 6px rgba(255, 221, 50, 0.6);
   }
-  .cell.ice-1::after { background: rgba(200, 240, 255, 0.28); }
-  .cell.ice::before {
-    content: '❄';
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 65%;
-    color: rgba(255,255,255,0.9);
-    z-index: 2;
+  .cell.exploding { animation: explode 0.3s ease-out forwards; }
+  .cell.ice {
+    background-image:
+      linear-gradient(145deg, rgba(235,250,255,0.97), rgba(195,230,250,0.9) 45%, rgba(225,247,255,0.95)),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.5) 0px, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 6px),
+      repeating-linear-gradient(25deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 8px);
+    box-shadow: inset 0 0 7px rgba(255,255,255,0.95), inset 0 2px 3px rgba(255,255,255,0.8), inset 0 -2px 4px rgba(60,110,140,0.55);
+    border: 1px solid rgba(255,255,255,0.8);
+  }
+  .cell.ice-1 {
+    background-image:
+      linear-gradient(145deg, rgba(225,247,255,0.75), rgba(185,225,248,0.6) 45%, rgba(220,245,255,0.7)),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 7px);
+    box-shadow: inset 0 0 5px rgba(255,255,255,0.75), inset 0 2px 2px rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.5);
   }
   @keyframes explode {
     0% { transform: scale(1); filter: brightness(2); }
@@ -757,11 +765,14 @@
   let COLORS = THEMES[0].colors;
   const BOMB_COLOR = '#2a2a2a';
 
+  let unlockedThemesCache = null;
   function getUnlockedThemeIds() {
-    try { return JSON.parse(localStorage.getItem('xalcaUnlocked') || '["kilim"]'); }
-    catch (e) { return ['kilim']; }
+    if (unlockedThemesCache) return unlockedThemesCache;
+    try { unlockedThemesCache = JSON.parse(localStorage.getItem('xalcaUnlocked') || '["kilim"]'); }
+    catch (e) { unlockedThemesCache = ['kilim']; }
+    return unlockedThemesCache;
   }
-  function saveUnlockedThemeIds(ids) { localStorage.setItem('xalcaUnlocked', JSON.stringify(ids)); }
+  function saveUnlockedThemeIds(ids) { unlockedThemesCache = ids; localStorage.setItem('xalcaUnlocked', JSON.stringify(ids)); }
   function getSelectedThemeId() { return localStorage.getItem('xalcaTheme') || 'kilim'; }
   function setSelectedThemeId(id) { localStorage.setItem('xalcaTheme', id); }
 
@@ -772,13 +783,20 @@
     renderThemeRow();
   }
 
+  let nextLockedThemeIdx = 0;
   function checkThemeUnlocks(currentScore) {
+    if (nextLockedThemeIdx >= THEMES.length) return; // hamısı artıq açılıb, yoxlamağa ehtiyac yoxdur
     const unlocked = getUnlockedThemeIds();
     let newlyUnlocked = null;
-    for (const theme of THEMES) {
-      if (currentScore >= theme.unlockScore && !unlocked.includes(theme.id)) {
+    while (nextLockedThemeIdx < THEMES.length) {
+      const theme = THEMES[nextLockedThemeIdx];
+      if (unlocked.includes(theme.id)) { nextLockedThemeIdx++; continue; }
+      if (currentScore >= theme.unlockScore) {
         unlocked.push(theme.id);
         newlyUnlocked = theme;
+        nextLockedThemeIdx++;
+      } else {
+        break;
       }
     }
     if (newlyUnlocked) {
@@ -1446,9 +1464,23 @@
     }, 2100);
   });
 
-  // ========== SÜRÜKLƏ-BURAX ==========
+  // ========== SÜRÜKLƏ-BURAX (performans üçün optimallaşdırılıb) ==========
   let dragState = null;
   const LIFT_OFFSET = 36;
+  let highlightedCells = [];
+  let lastTargetKey = null;
+  let rafPending = false;
+  let pendingPointer = null;
+
+  function scheduleMove(x, y) {
+    pendingPointer = { x, y };
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      rafPending = false;
+      if (dragState && pendingPointer) moveGhost(pendingPointer.x, pendingPointer.y);
+    });
+  }
 
   function attachDrag(slot, index) {
     slot.onpointerdown = (e) => {
@@ -1465,10 +1497,11 @@
 
       dragState = { index, piece, ghost, boardRect: rect, cellPx };
       slot.style.opacity = '0.2';
+      lastTargetKey = null;
 
-      moveGhost(e.clientX, e.clientY);
+      scheduleMove(e.clientX, e.clientY);
 
-      const onMove = (ev) => moveGhost(ev.clientX, ev.clientY);
+      const onMove = (ev) => scheduleMove(ev.clientX, ev.clientY);
       const onUp = (ev) => {
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
@@ -1523,25 +1556,32 @@
     dragState.ghost.style.top = (clientY - (rows * cpx) - LIFT_OFFSET + (cpx / 2)) + 'px';
 
     const { r, c } = ghostTargetCell(clientX, clientY);
+    const key = r + ',' + c;
+    if (key === lastTargetKey) return; // hədəf xana dəyişməyib, yenidən hesablamağa ehtiyac yoxdur
+    lastTargetKey = key;
+
     clearPreview();
     const fits = canPlace(piece.shape, r, c);
+    const touched = [];
     for (const [dr, dc] of shapeCells(piece.shape)) {
       const rr = r + dr, cc = c + dc;
       if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
-        cellEls[rr][cc].classList.add(fits ? (piece.bomb ? 'preview-bomb' : 'preview') : 'preview-bad');
+        const el = cellEls[rr][cc];
+        el.classList.add(fits ? (piece.bomb ? 'preview-bomb' : 'preview') : 'preview-bad');
+        touched.push(el);
       }
     }
     if (fits && !piece.bomb) {
       const { fullRows, fullCols } = computeWouldClearLines(piece.shape, r, c);
-      for (const rr of fullRows) for (let cc = 0; cc < SIZE; cc++) cellEls[rr][cc].classList.add('line-ready');
-      for (const cc of fullCols) for (let rr = 0; rr < SIZE; rr++) cellEls[rr][cc].classList.add('line-ready');
+      for (const rr of fullRows) for (let cc = 0; cc < SIZE; cc++) { const el = cellEls[rr][cc]; el.classList.add('line-ready'); touched.push(el); }
+      for (const cc of fullCols) for (let rr = 0; rr < SIZE; rr++) { const el = cellEls[rr][cc]; el.classList.add('line-ready'); touched.push(el); }
     }
+    highlightedCells = touched;
   }
 
   function clearPreview() {
-    for (let r = 0; r < SIZE; r++)
-      for (let c = 0; c < SIZE; c++)
-        cellEls[r][c].classList.remove('preview', 'preview-bad', 'preview-bomb', 'line-ready');
+    for (const el of highlightedCells) el.classList.remove('preview', 'preview-bad', 'preview-bomb', 'line-ready');
+    highlightedCells = [];
   }
 
   function finishDrag(clientX, clientY) {
