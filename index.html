@@ -38,6 +38,9 @@
     color: var(--cream);
     overflow: hidden;
     touch-action: none;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
   #app {
     height: 100%;
@@ -143,12 +146,14 @@
     display: grid; width: 100%; height: 100%; gap: 3px; position: relative;
     background-image: repeating-linear-gradient(45deg, rgba(212,162,58,0.05) 0px, rgba(212,162,58,0.05) 2px, transparent 2px, transparent 6px);
     border-radius: 6px;
+    contain: layout style;
   }
   .cell {
     position: relative;
     background-color: var(--grid-empty);
     border-radius: 4px;
     border: 1px solid var(--grid-border);
+    contain: paint style;
   }
   .cell.filled { border: none; box-shadow: inset 0 2px 3px rgba(255,255,255,0.28), inset 0 -3px 4px rgba(0,0,0,0.25); }
   .cell.just-placed { transition: transform 0.15s; }
@@ -163,18 +168,13 @@
   }
   .cell.exploding { animation: explode 0.3s ease-out forwards; }
   .cell.ice {
-    background-image:
-      linear-gradient(145deg, rgba(235,250,255,0.97), rgba(195,230,250,0.9) 45%, rgba(225,247,255,0.95)),
-      repeating-linear-gradient(115deg, rgba(255,255,255,0.5) 0px, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 6px),
-      repeating-linear-gradient(25deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 8px);
-    box-shadow: inset 0 0 7px rgba(255,255,255,0.95), inset 0 2px 3px rgba(255,255,255,0.8), inset 0 -2px 4px rgba(60,110,140,0.55);
+    background: linear-gradient(145deg, #eaf7ff, #cdeaf9 60%, #e4f6ff);
+    box-shadow: inset 0 0 5px rgba(255,255,255,0.9);
     border: 1px solid rgba(255,255,255,0.8);
   }
   .cell.ice-1 {
-    background-image:
-      linear-gradient(145deg, rgba(225,247,255,0.75), rgba(185,225,248,0.6) 45%, rgba(220,245,255,0.7)),
-      repeating-linear-gradient(115deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 7px);
-    box-shadow: inset 0 0 5px rgba(255,255,255,0.75), inset 0 2px 2px rgba(255,255,255,0.55);
+    background: linear-gradient(145deg, #dcf0fb, #b9e2f2 60%, #d5eefb);
+    box-shadow: inset 0 0 3px rgba(255,255,255,0.7);
     border: 1px solid rgba(255,255,255,0.5);
   }
   @keyframes explode {
@@ -214,7 +214,7 @@
 
   #footer { font-size: 11px; color: var(--cream-dim); text-align: center; flex-shrink: 0; }
 
-  .dragging-piece { position: fixed; pointer-events: none; z-index: 50; opacity: 0.92; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+  .dragging-piece { position: fixed; pointer-events: none; z-index: 50; opacity: 0.92; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); will-change: transform; top: 0; left: 0; }
   .float-score {
     position: absolute; font-family: 'Newsreader', serif; font-weight: 700; color: var(--gold);
     pointer-events: none; animation: floatUp 0.75s ease-out forwards; z-index: 10; font-size: 18px;
@@ -494,7 +494,7 @@
     animation: helpPop 0.3s cubic-bezier(.3,1.5,.4,1) both;
   }
   #leaderboardCard h2 { font-family: 'Newsreader', serif; color: var(--gold); margin: 0 0 14px; font-size: 20px; text-align: center; flex-shrink: 0; }
-  #lbList { overflow-y: auto; flex: 1; min-height: 100px; margin-bottom: 14px; }
+  #lbList { overflow-y: auto; flex: 1; min-height: 100px; margin-bottom: 14px; -webkit-overflow-scrolling: touch; }
   #lbLoading { text-align: center; color: var(--cream-dim); font-size: 13px; padding: 20px 0; }
   .lb-row {
     display: flex;
@@ -532,6 +532,9 @@
     100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
   }
 </style>
+  <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
 </head>
 <body>
 <div id="app">
@@ -655,6 +658,21 @@
   const boardWrap = document.getElementById('boardWrap');
   const soundToggleBtn = document.getElementById('soundToggle');
   const shareBtn = document.getElementById('shareBtn');
+
+  // ========== PERFORMANCE: dirty cell tracking ==========
+  // renderGrid əvəzinə yalnız dəyişən xanaları yeniləyirik
+  let gridDirty = [];
+  function initDirty() {
+    gridDirty = [];
+    for (let r = 0; r < SIZE; r++) gridDirty.push(new Array(SIZE).fill(true));
+  }
+  function markAllDirty() {
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) gridDirty[r][c] = true;
+  }
+  function markDirty(r, c) {
+    if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) gridDirty[r][c] = true;
+  }
+
   // ========== FIREBASE: DÜNYA SIRALAMASI ==========
   const firebaseConfig = {
     apiKey: "AIzaSyB3vTn9Er7kGqWUYbIkESFiR5EqEzUPpaE",
@@ -683,7 +701,7 @@
   async function submitScoreIfBest(scoreValue) {
     if (!fbReady || !fbDb || !fbUid) return;
     const name = getPlayerName();
-    if (!name) return; // ad qoyulmayıbsa, göndərmə
+    if (!name) return;
     try {
       await fbDb.collection('leaderboard').doc(fbUid).set({
         name: name,
@@ -988,7 +1006,7 @@
 
   let nextLockedThemeIdx = 0;
   function checkThemeUnlocks(currentScore) {
-    if (nextLockedThemeIdx >= THEMES.length) return; // hamısı artıq açılıb, yoxlamağa ehtiyac yoxdur
+    if (nextLockedThemeIdx >= THEMES.length) return;
     const unlocked = getUnlockedThemeIds();
     let newlyUnlocked = null;
     while (nextLockedThemeIdx < THEMES.length) {
@@ -1040,7 +1058,7 @@
       swatch.style.background = isUnlocked ? grad : 'rgba(255,255,255,0.08)';
       if (!isUnlocked) swatch.innerHTML = '<span class="lock-icon">🔒</span>';
       if (isUnlocked) {
-        swatch.addEventListener('click', () => { applyTheme(theme.id); renderGrid(); });
+        swatch.addEventListener('click', () => { applyTheme(theme.id); markAllDirty(); renderGrid(); });
       }
       row.appendChild(swatch);
     }
@@ -1056,9 +1074,18 @@
     [[1,1],[1,0]], [[1,1],[0,1]], [[1,0],[1,1]], [[0,1],[1,1]],
   ];
 
+  // ===== PERFORMANCE: shapeCells öncədən hesablanıb saxlanılır =====
+  const SHAPE_CELLS_CACHE = SHAPES.map(s => {
+    const cells = [];
+    for (let r = 0; r < s.length; r++)
+      for (let c = 0; c < s[r].length; c++)
+        if (s[r][c]) cells.push([r, c]);
+    return cells;
+  });
+
   const COMBO_SPEECH = ['', 'Nice!', 'Great!', 'Awesome!', 'Amazing!', 'Incredible!', 'Legendary!'];
 
-  let grid = []; // each cell: null or {color, ice:0}
+  let grid = [];
   let cellEls = [];
   let score = 0;
   let best = parseInt(localStorage.getItem('xalcaBest') || '0', 10) || 0;
@@ -1078,7 +1105,7 @@
   let noClearStreak = 0;
   let nextIceAt = 400;
 
-  const DAY_MULTIPLIERS = [2, 1, 1, 1.5, 1, 1, 2]; // Sun, Mon, Tue, Wed, Thu, Fri, Sat
+  const DAY_MULTIPLIERS = [2, 1, 1, 1.5, 1, 1, 2];
   const dayMultiplier = DAY_MULTIPLIERS[new Date().getDay()];
   function addScore(amount) { score += Math.round(amount * dayMultiplier); }
 
@@ -1116,7 +1143,14 @@
   const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
   let audioCtx = null;
   let musicTimer = null;
-  const PENTATONIC = [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37];
+  const MUSIC_PLAYLIST = [
+    [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37],
+    [220, 233.08, 277.18, 293.66, 329.63, 349.23, 415.30, 440],
+    [220, 233.08, 277.18, 293.66, 349.23, 369.99, 415.30, 440],
+  ];
+  let musicTrackIdx = 0;
+  let musicStep = 0;
+  const NOTES_PER_TRACK = 16;
 
   function ensureAudio() {
     if (!audioCtx) audioCtx = new AudioCtxClass();
@@ -1155,18 +1189,25 @@
   function playHammerSound() { playTone(150, 0.12, 'square', 0.2); playTone(80, 0.15, 'sine', 0.15, 0.02); }
   function playShuffleSound() { playTone(320, 0.1, 'triangle', 0.15); playTone(420, 0.1, 'triangle', 0.15, 0.08); playTone(520, 0.12, 'triangle', 0.15, 0.16); }
 
+  // ===== PERFORMANCE: setTimeout zənciri setInterval əvəzinə (drift yoxdur) =====
   function startMusic() {
     if (musicTimer) return;
     ensureAudio();
-    let step = 0;
-    musicTimer = setInterval(() => {
-      if (!soundOn) return;
-      const note = PENTATONIC[(step * 3) % PENTATONIC.length];
+    function playNext() {
+      if (!soundOn) { musicTimer = null; return; }
+      const track = MUSIC_PLAYLIST[musicTrackIdx];
+      const note = track[(musicStep * 3) % track.length];
       playTone(note / 2, 2.4, 'sine', 0.022);
-      step++;
-    }, 1900);
+      musicStep++;
+      if (musicStep >= NOTES_PER_TRACK) {
+        musicStep = 0;
+        musicTrackIdx = (musicTrackIdx + 1) % MUSIC_PLAYLIST.length;
+      }
+      musicTimer = setTimeout(playNext, 1900);
+    }
+    musicTimer = setTimeout(playNext, 0);
   }
-  function stopMusic() { if (musicTimer) { clearInterval(musicTimer); musicTimer = null; } }
+  function stopMusic() { if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } }
   function updateSoundToggleUI() { soundToggleBtn.textContent = soundOn ? '🔊' : '🔇'; }
 
   soundToggleBtn.addEventListener('click', () => {
@@ -1189,7 +1230,7 @@
 
   // ========== VİBRASİYA (HAPTİK) ==========
   function vibrate(pattern) {
-    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* dəstəklənmirsə keç */ }
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { }
   }
 
   // ========== PAYLAŞIM ==========
@@ -1205,7 +1246,7 @@
     const text = t('shareText')(score);
     const shareData = { title: 'Xalça', text, url: location.href };
     if (navigator.share) {
-      try { await navigator.share(shareData); } catch (e) { /* user cancelled */ }
+      try { await navigator.share(shareData); } catch (e) { }
     } else {
       try {
         await navigator.clipboard.writeText(text + ' ' + location.href);
@@ -1219,6 +1260,7 @@
   // ========== OYUN MƏNTİQİ ==========
   function initGrid() {
     grid = [];
+    initDirty();
     for (let r = 0; r < SIZE; r++) grid.push(new Array(SIZE).fill(null));
   }
 
@@ -1227,21 +1269,26 @@
     boardEl.style.gridTemplateRows = `repeat(${SIZE}, 1fr)`;
     boardEl.innerHTML = '';
     cellEls = [];
+    const frag = document.createDocumentFragment();
     for (let r = 0; r < SIZE; r++) {
       const row = [];
       for (let c = 0; c < SIZE; c++) {
         const div = document.createElement('div');
         div.className = 'cell';
-        boardEl.appendChild(div);
+        frag.appendChild(div);
         row.push(div);
       }
       cellEls.push(row);
     }
+    boardEl.appendChild(frag);
   }
 
+  // ===== PERFORMANCE: dirty tracking — yalnız dəyişən xanaları yenilə =====
   function renderGrid() {
     for (let r = 0; r < SIZE; r++) {
       for (let c = 0; c < SIZE; c++) {
+        if (!gridDirty[r][c]) continue;
+        gridDirty[r][c] = false;
         const el = cellEls[r][c];
         el.classList.remove('preview', 'preview-bad', 'preview-bomb', 'line-ready', 'ice', 'ice-1', 'ice-2');
         const cell = grid[r][c];
@@ -1295,6 +1342,7 @@
     const [r, c] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
     const color = COLORS[Math.floor(Math.random() * COLORS.length)];
     grid[r][c] = { color, ice: 2 };
+    markDirty(r, c);
   }
 
   function maybeSpawnIce() {
@@ -1317,7 +1365,10 @@
     if (!anyPieceFits()) endGame();
   }
 
+  // ===== PERFORMANCE: cached shapeCells istifadə et =====
   function shapeCells(shape) {
+    const idx = SHAPES.indexOf(shape);
+    if (idx !== -1) return SHAPE_CELLS_CACHE[idx];
     const cells = [];
     for (let r = 0; r < shape.length; r++)
       for (let c = 0; c < shape[r].length; c++)
@@ -1354,7 +1405,7 @@
       utter.pitch = 1.2;
       utter.volume = 1.0;
       window.speechSynthesis.speak(utter);
-    } catch (e) { /* səs dəstəklənmirsə səssizcə keç */ }
+    } catch (e) { }
   }
 
   function showComboText(comboCount) {
@@ -1381,6 +1432,7 @@
         if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && grid[r][c] !== null) {
           cellEls[r][c].classList.add('exploding');
           grid[r][c] = null;
+          markDirty(r, c);
           cleared++;
         }
       }
@@ -1406,6 +1458,7 @@
       for (const [dr, dc] of cells) {
         const r = atR + dr, c = atC + dc;
         grid[r][c] = { color: piece.color };
+        markDirty(r, c);
         const el = cellEls[r][c];
         el.classList.add('filled', 'just-placed');
         el.style.background = piece.color;
@@ -1449,6 +1502,7 @@
           } else {
             grid[r][c] = null;
           }
+          markDirty(r, c);
         }
       }
       for (const c of fullCols) {
@@ -1460,6 +1514,7 @@
           } else {
             grid[r][c] = null;
           }
+          markDirty(r, c);
         }
       }
 
@@ -1493,7 +1548,10 @@
     boardWrap.appendChild(banner);
     setTimeout(() => banner.remove(), 1300);
 
+    // ===== PERFORMANCE: DocumentFragment ilə batch confetti yaradılması =====
     const confettiColors = COLORS;
+    const frag = document.createDocumentFragment();
+    const dots = [];
     for (let i = 0; i < 24; i++) {
       const dot = document.createElement('div');
       dot.className = 'confetti-dot';
@@ -1501,9 +1559,11 @@
       dot.style.top = (20 + Math.random() * 30) + '%';
       dot.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
       dot.style.animationDelay = (Math.random() * 0.2) + 's';
-      boardWrap.appendChild(dot);
-      setTimeout(() => dot.remove(), 1400);
+      frag.appendChild(dot);
+      dots.push(dot);
     }
+    boardWrap.appendChild(frag);
+    setTimeout(() => { for (const d of dots) d.remove(); }, 1400);
   }
 
   function showFloatScore(text) {
@@ -1615,6 +1675,7 @@
     if (hammerActive) {
       if (grid[r][c] !== null) {
         grid[r][c] = null;
+        markDirty(r, c);
         playHammerSound();
         vibrate(30);
         cellEls[r][c].classList.add('exploding');
@@ -1643,7 +1704,7 @@
   }
   boardEl.addEventListener('pointerdown', onBoardPointerDown);
 
-  // ========== REKLAM SİMULYASİYASI (rewarded ad — real şəbəkə sonra qoşulacaq) ==========
+  // ========== REKLAM SİMULYASİYASI ==========
   function openWatchAdModal(target) {
     adTarget = target;
     document.getElementById('adTitleEl').textContent = t('watchAdTitle');
@@ -1705,7 +1766,8 @@
       ghost.innerHTML = pieceSVG(piece.shape, piece.color, cellPx, piece.bomb);
       document.body.appendChild(ghost);
 
-      dragState = { index, piece, ghost, boardRect: rect, cellPx };
+      // ===== PERFORMANCE: shapeCells-i bir dəfə hesabla və dragState-də saxla =====
+      dragState = { index, piece, ghost, boardRect: rect, cellPx, pieceCells: shapeCells(piece.shape) };
       slot.style.opacity = '0.2';
       lastTargetKey = null;
 
@@ -1762,18 +1824,21 @@
     const cpx = dragState.cellPx;
     const rows = piece.shape.length, cols = piece.shape[0].length;
 
-    dragState.ghost.style.left = (clientX - (cols * cpx) / 2) + 'px';
-    dragState.ghost.style.top = (clientY - (rows * cpx) - LIFT_OFFSET + (cpx / 2)) + 'px';
+    // ===== PERFORMANCE: transform istifadə et (GPU加速), left/top əvəzinə =====
+    const ghostX = clientX - (cols * cpx) / 2;
+    const ghostY = clientY - (rows * cpx) - LIFT_OFFSET + (cpx / 2);
+    dragState.ghost.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0)`;
 
     const { r, c } = ghostTargetCell(clientX, clientY);
     const key = r + ',' + c;
-    if (key === lastTargetKey) return; // hədəf xana dəyişməyib, yenidən hesablamağa ehtiyac yoxdur
+    if (key === lastTargetKey) return;
     lastTargetKey = key;
 
     clearPreview();
     const fits = canPlace(piece.shape, r, c);
     const touched = [];
-    for (const [dr, dc] of shapeCells(piece.shape)) {
+    // ===== PERFORMANCE: dragState-də saxlanmış pieceCells istifadə et =====
+    for (const [dr, dc] of dragState.pieceCells) {
       const rr = r + dr, cc = c + dc;
       if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
         const el = cellEls[rr][cc];
@@ -1865,7 +1930,7 @@
   });
 
   homeBtn.addEventListener('click', () => {
-    if (!overlay.classList.contains('hide')) return; // artıq overlay açıqdır
+    if (!overlay.classList.contains('hide')) return;
     paused = true;
     overlayMode = 'paused';
     overlay.classList.remove('hide');
@@ -1874,11 +1939,13 @@
   });
 
   const fringeRow = document.getElementById('fringeRow');
+  const fringeFrag = document.createDocumentFragment();
   for (let i = 0; i < 18; i++) {
     const strand = document.createElement('div');
     strand.className = 'fringe-strand';
-    fringeRow.appendChild(strand);
+    fringeFrag.appendChild(strand);
   }
+  fringeRow.appendChild(fringeFrag);
 
   applyTheme(getSelectedThemeId());
   buildBoardDOM();
@@ -1889,9 +1956,16 @@
   updateShuffleUI();
   applyLanguage();
 
+  // ===== PERFORMANCE: resize handler rAF ilə debounce olunub =====
+  let resizeRafPending = false;
   window.addEventListener('resize', () => {
-    const rect = boardEl.getBoundingClientRect();
-    cellPx = rect.width / SIZE;
+    if (resizeRafPending) return;
+    resizeRafPending = true;
+    requestAnimationFrame(() => {
+      resizeRafPending = false;
+      const rect = boardEl.getBoundingClientRect();
+      cellPx = rect.width / SIZE;
+    });
   });
 })();
 </script>
