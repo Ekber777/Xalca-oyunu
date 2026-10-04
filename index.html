@@ -236,11 +236,87 @@
     animation: comboPop 0.9s cubic-bezier(.2,1.4,.4,1) forwards;
     white-space: nowrap;
   }
+  .combo-text.tier-2 {
+    color: #ff8a3d;
+    text-shadow: 0 0 20px rgba(255,138,61,0.8), 0 0 8px rgba(255,138,61,0.5), 0 2px 6px rgba(0,0,0,0.6);
+  }
+  .combo-text.tier-3 {
+    color: #ff5e7a;
+    text-shadow: 0 0 24px rgba(255,94,122,0.9), 0 0 12px rgba(255,94,122,0.6), 0 2px 6px rgba(0,0,0,0.6);
+    animation: comboPopGrand 0.95s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  .combo-text.tier-4 {
+    color: #c084fc;
+    text-shadow: 0 0 28px rgba(192,132,252,0.95), 0 0 16px rgba(192,132,252,0.7), 0 2px 8px rgba(0,0,0,0.7);
+    animation: comboPopGrand 1s cubic-bezier(.2,1.8,.4,1) forwards;
+  }
   @keyframes comboPop {
     0% { transform: translate(-50%, -50%) scale(0.3) rotate(-4deg); opacity: 0; }
     25% { transform: translate(-50%, -50%) scale(1.15) rotate(2deg); opacity: 1; }
     45% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
     100% { transform: translate(-50%, -65%) scale(0.95) rotate(0deg); opacity: 0; }
+  }
+  @keyframes comboPopGrand {
+    0% { transform: translate(-50%, -50%) scale(0.2) rotate(-8deg); opacity: 0; }
+    20% { transform: translate(-50%, -50%) scale(1.4) rotate(4deg); opacity: 1; }
+    35% { transform: translate(-50%, -50%) scale(1.1) rotate(-2deg); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.2) rotate(2deg); opacity: 1; }
+    70% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(-50%, -80%) scale(1.1) rotate(0deg); opacity: 0; }
+  }
+
+  .combo-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 14;
+    overflow: hidden;
+  }
+  .combo-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  @keyframes particleBurst {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+  }
+
+  .combo-flash {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 13;
+    border-radius: 14px;
+    animation: comboFlash 0.4s ease-out forwards;
+  }
+  @keyframes comboFlash {
+    0% { box-shadow: inset 0 0 0 0 rgba(255,221,50,0); }
+    30% { box-shadow: inset 0 0 40px 8px rgba(255,221,50,0.3); }
+    100% { box-shadow: inset 0 0 0 0 rgba(255,221,50,0); }
+  }
+  .combo-flash.tier-3 { animation: comboFlash3 0.5s ease-out forwards; }
+  @keyframes comboFlash3 {
+    0% { box-shadow: inset 0 0 0 0 rgba(255,94,122,0); }
+    30% { box-shadow: inset 0 0 60px 12px rgba(255,94,122,0.35); }
+    100% { box-shadow: inset 0 0 0 0 rgba(255,94,122,0); }
+  }
+  .combo-flash.tier-4 { animation: comboFlash4 0.6s ease-out forwards; }
+  @keyframes comboFlash4 {
+    0% { box-shadow: inset 0 0 0 0 rgba(192,132,252,0); }
+    30% { box-shadow: inset 0 0 80px 16px rgba(192,132,252,0.4); }
+    100% { box-shadow: inset 0 0 0 0 rgba(192,132,252,0); }
+  }
+
+  #combo.glow-combo {
+    animation: comboGlow 0.6s ease-out;
+  }
+  @keyframes comboGlow {
+    0% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+    40% { transform: scale(1.3); text-shadow: 0 0 16px rgba(212,162,58,0.8); }
+    100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
   }
 
   #modeRow { display: flex; justify-content: center; gap: 7px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -409,6 +485,24 @@
     display: none;
     flex-shrink: 0;
   }
+  #weeklyChampion {
+    width: 100%;
+    flex-shrink: 0;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(212,162,58,0.15), rgba(255,138,61,0.08));
+    border: 1px solid var(--gold-soft);
+    border-radius: 12px;
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--cream);
+  }
+  #weeklyChampion .crown { font-size: 16px; flex-shrink: 0; }
+  #weeklyChampion .champ-text { flex: 1; text-align: center; }
+  #weeklyChampion .champ-label { font-size: 9px; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  #weeklyChampion .champ-name { font-family: 'Newsreader', serif; font-weight: 700; color: var(--gold); font-size: 14px; }
+  #weeklyChampion .champ-score { font-weight: 700; color: var(--gold); flex-shrink: 0; }
   .tool-btn {
     display: flex; align-items: center; gap: 6px;
     background: var(--surface-strong);
@@ -669,6 +763,12 @@
 
   <div id="dailyBanner"></div>
 
+  <div id="weeklyChampion">
+    <span class="crown">👑</span>
+    <div class="champ-text"><div class="champ-label" id="champLabelEl">Bu həftənin qalibi</div><div class="champ-name" id="champNameEl">—</div></div>
+    <span class="champ-score" id="champScoreEl">0</span>
+  </div>
+
   <div id="carpetProgress">
     <div id="carpetLabelRow"><span id="carpetName">Quba</span><span id="carpetPct">0%</span></div>
     <div id="carpetBarWrap"><div id="carpetBar"></div></div>
@@ -818,7 +918,7 @@
     fbDb = firebase.firestore();
     fbAuth.signInAnonymously().catch((e) => console.error('Firebase auth error:', e));
     fbAuth.onAuthStateChanged((user) => {
-      if (user) { fbUid = user.uid; fbReady = true; }
+      if (user) { fbUid = user.uid; fbReady = true; loadWeeklyChampion(); }
     });
   } catch (e) {
     console.error('Firebase init failed:', e);
@@ -837,6 +937,8 @@
         score: scoreValue,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      weeklyChampLoaded = false;
+      loadWeeklyChampion();
     } catch (e) { console.error('Leaderboard yazma xətası:', e); }
   }
 
@@ -870,6 +972,49 @@
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  function getWeekStart() {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = day === 0 ? 6 : day - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  }
+
+  let weeklyChampLoaded = false;
+  async function loadWeeklyChampion() {
+    const champEl = document.getElementById('weeklyChampion');
+    const nameEl = document.getElementById('champNameEl');
+    const scoreEl = document.getElementById('champScoreEl');
+    const labelEl = document.getElementById('champLabelEl');
+    labelEl.textContent = t('weeklyChampion');
+    if (!fbDb) { champEl.style.display = 'none'; return; }
+    if (weeklyChampLoaded) return;
+    try {
+      const weekStart = firebase.firestore.Timestamp.fromDate(getWeekStart());
+      const snapshot = await fbDb.collection('leaderboard')
+        .where('updatedAt', '>=', weekStart)
+        .orderBy('updatedAt', 'desc')
+        .limit(1)
+        .get();
+      if (snapshot.empty) {
+        champEl.style.display = 'none';
+        return;
+      }
+      const doc = snapshot.docs[0];
+      const d = doc.data();
+      const isMe = doc.id === fbUid;
+      nameEl.textContent = isMe ? t('weeklyYou') : escapeHtml(d.name || '?');
+      scoreEl.textContent = d.score + ' ' + t('weeklyScore');
+      champEl.style.display = 'flex';
+      weeklyChampLoaded = true;
+    } catch (e) {
+      console.error('Weekly champion error:', e);
+      champEl.style.display = 'none';
+    }
   }
 
   const leaderboardBtn = document.getElementById('leaderboardBtn');
@@ -968,6 +1113,7 @@
       musicOff: 'Söndür', musicOffDesc: 'Musiqi olmadan oyna',
       carpetNames: { quba: 'Quba', qarabag: 'Qarabağ', tebriz: 'Təbriz', shirvan: 'Şirvan', gazakh: 'Qazax' },
       carpetDescs: { quba: 'Səkkizguşəli ulduz və həndəsi naxışlar', qarabag: 'Əyri ləçək və çiçək kompozisiyaları', tebriz: 'Müqərnəs və nəbati naxışlar', shirvan: 'Xətai və bəndlik naxışlar', gazakh: 'Qoşbuqalı və həndəsi ornamentlər' },
+      weeklyChampion: 'Bu həftənin qalibi', weeklyYou: 'Sən', weeklyLoading: 'Həftə qalibi yüklənir...', weeklyNone: 'Hələ qalib yoxdur', weeklyScore: 'xal',
     },
     tr: {
       sub: 'deseni ör', xal: 'Puan', best: 'En iyi', combo: 'Seri',
@@ -1005,6 +1151,7 @@
       musicOff: 'Kapalı', musicOffDesc: 'Müzik olmadan oyna',
       carpetNames: { quba: 'Kuba', qarabag: 'Karabağ', tebriz: 'Tebriz', shirvan: 'Şirvan', gazakh: 'Kazak' },
       carpetDescs: { quba: 'Sekiz köşeli yıldız ve geometrik desenler', qarabag: 'Eğri kemer ve çiçek kompozisyonları', tebriz: 'Mukarnas ve nebatî desenler', shirvan: 'Hatai ve bendlik desenler', gazakh: 'İkiz bukak ve geometrik ornamentler' },
+      weeklyChampion: 'Bu haftanın şampiyonu', weeklyYou: 'Sen', weeklyLoading: 'Hafta şampiyonu yükleniyor...', weeklyNone: 'Henüz şampiyon yok', weeklyScore: 'puan',
     },
     en: {
       sub: 'weave the pattern', xal: 'Score', best: 'Best', combo: 'Streak',
@@ -1042,6 +1189,7 @@
       musicOff: 'Off', musicOffDesc: 'Play without music',
       carpetNames: { quba: 'Quba', qarabag: 'Karabakh', tebriz: 'Tabriz', shirvan: 'Shirvan', gazakh: 'Gazakh' },
       carpetDescs: { quba: 'Octagonal stars and geometric patterns', qarabag: 'Curved arches and floral compositions', tebriz: 'Mugarnas and botanical motifs', shirvan: 'Khatai and bendluk patterns', gazakh: 'Twin medallions and geometric ornaments' },
+      weeklyChampion: 'This week\'s champion', weeklyYou: 'You', weeklyLoading: 'Loading weekly champion...', weeklyNone: 'No champion yet', weeklyScore: 'points',
     },
   };
   const LANG_CYCLE = ['az', 'tr', 'en'];
@@ -1118,6 +1266,7 @@
     document.getElementById('lbTitleEl').textContent = t('lbTitle');
     document.getElementById('lbEditNameBtn').textContent = t('lbEditName');
     document.getElementById('lbCloseBtn').textContent = t('lbClose');
+    document.getElementById('champLabelEl').textContent = t('weeklyChampion');
     updateCarpetProgress();
   }
 
@@ -1161,20 +1310,52 @@
     }
   }
 
-  // ========== MILLI MUSIQI SISTEMI ==========
-  // Proqram tərəfindən yaradılan muğam ladları — heç bir real əsərin surəti deyil, telif haqqı yoxdur
+  // ========== ZƏNGIN PROSEDUR MUSIQI SISTEMI ==========
+  // Tam proqram tərəfindən yaradılan melodiyalar — heç bir real əsərin surəti deyil
+  // Hər trek: əsas melodiya + arpeccio + bas + zərb => tam musiqi hissi
   const MUSIC_TRACKS = [
-    { id: 'off', nameKey: 'musicOff', descKey: 'musicOffDesc', icon: '🔇', scale: null, tempo: 0, volume: 0 },
-    { id: 'shur', name: { az: 'Şur', tr: 'Şur', en: 'Shur' }, desc: { az: 'Sakit, aramlı muğam əhvalı', tr: 'Sakin, huzurlu makam havası', en: 'Calm, serene mugham mood' }, icon: '🌙',
-      scale: [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37], tempo: 2100, volume: 0.022, waveType: 'sine', bassNote: 110 },
-    { id: 'bayati', name: { az: 'Bayatı', tr: 'Bayati', en: 'Bayati' }, desc: { az: 'Həsrətli, lirik əhval', tr: 'Özlemli, lirik hava', en: 'Yearning, lyrical mood' }, icon: '🌅',
-      scale: [220, 233.08, 277.18, 293.66, 329.63, 349.23, 415.30, 440], tempo: 1900, volume: 0.024, waveType: 'sine', bassNote: 98 },
-    { id: 'rast', name: { az: 'Rast', tr: 'Rast', en: 'Rast' }, desc: { az: 'Festivial, mərd əhval', tr: 'Festiv, coşkulu hava', en: 'Festive, bold mood' }, icon: '⚔️',
-      scale: [220, 233.08, 277.18, 293.66, 349.23, 369.99, 415.30, 440], tempo: 1600, volume: 0.025, waveType: 'triangle', bassNote: 130.81 },
-    { id: 'segah', name: { az: 'Səgah', tr: 'Segah', en: 'Segah' }, desc: { az: 'Sirli, sehrli əhval', tr: 'Gizemli, mistik hava', en: 'Mysterious, mystical mood' }, icon: '✨',
-      scale: [196, 220, 233.08, 293.66, 329.63, 349.23, 392, 440], tempo: 2000, volume: 0.022, waveType: 'sine', bassNote: 73.42 },
-    { id: 'chahargah', name: { az: 'Çahargah', tr: 'Çahargah', en: 'Chahargah' }, desc: { az: 'Döyüş, qəhrəman əhval', tr: 'Savaş, kahraman havası', en: 'Battle, heroic mood' }, icon: '🔥',
-      scale: [261.63, 277.18, 311.13, 349.23, 392, 415.30, 466.16, 523.25], tempo: 1400, volume: 0.026, waveType: 'triangle', bassNote: 65.41 },
+    { id: 'off', nameKey: 'musicOff', descKey: 'musicOffDesc', icon: '🔇', tempo: 0,
+      melody: null, arpeggio: null, bass: null, drum: null, chordPad: null },
+    { id: 'shur', name: { az: 'Şur', tr: 'Şur', en: 'Shur' }, desc: { az: 'Sakit, aramlı axşam əhvalı', tr: 'Sakin, huzurlu akşam havası', en: 'Calm, serene evening mood' }, icon: '🌙', tempo: 480,
+      melody:    [0, 2, 4, 2, 0, 4, 5, 4, 2, 0, 2, 4, 5, 7, 4, 2],
+      arpeggio:  [0, 2, 4, 7, 4, 2, 0, 2, 0, 2, 4, 7, 4, 2, 0, 2],
+      bass:      [0, 0, 4, 4, 2, 2, 5, 5, 0, 0, 4, 4, 2, 2, 5, 5],
+      drum:      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
+      chordPad:  [0, 4, 2, 5, 0, 4, 2, 5, 0, 4, 2, 5, 0, 4, 2, 5],
+      scale: [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37, 659.25],
+      waveType: 'sine', volMelody: 0.022, volArp: 0.012, volBass: 0.018, volDrum: 0.008, volPad: 0.006 },
+    { id: 'bayati', name: { az: 'Bayatı', tr: 'Bayati', en: 'Bayati' }, desc: { az: 'Həsrətli, lirik dağ əhvalı', tr: 'Özlemli, lirik dağ havası', en: 'Yearning, lyrical mountain mood' }, icon: '🌅', tempo: 420,
+      melody:    [0, 1, 3, 1, 0, 3, 4, 3, 1, 0, 1, 3, 4, 6, 3, 1],
+      arpeggio:  [0, 3, 1, 6, 3, 1, 0, 1, 0, 3, 1, 6, 3, 1, 0, 1],
+      bass:      [0, 0, 3, 3, 1, 1, 4, 4, 0, 0, 3, 3, 1, 1, 4, 4],
+      drum:      [1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0],
+      chordPad:  [0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4],
+      scale: [220, 233.08, 277.18, 293.66, 329.63, 349.23, 415.30, 440, 523.25],
+      waveType: 'sine', volMelody: 0.024, volArp: 0.013, volBass: 0.016, volDrum: 0.007, volPad: 0.006 },
+    { id: 'rast', name: { az: 'Rast', tr: 'Rast', en: 'Rast' }, desc: { az: 'Bayramlı, coşqulu əhval', tr: 'Festiv, coşkulu hava', en: 'Festive, energetic mood' }, icon: '⚔️', tempo: 360,
+      melody:    [0, 2, 4, 6, 4, 2, 0, 2, 4, 6, 7, 6, 4, 2, 0, 2],
+      arpeggio:  [0, 4, 2, 6, 4, 2, 0, 2, 0, 4, 2, 6, 4, 2, 0, 4],
+      bass:      [0, 0, 4, 4, 2, 2, 6, 6, 0, 0, 4, 4, 2, 2, 6, 6],
+      drum:      [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
+      chordPad:  [0, 4, 2, 6, 0, 4, 2, 6, 0, 4, 2, 6, 0, 4, 2, 6],
+      scale: [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37, 659.25],
+      waveType: 'triangle', volMelody: 0.026, volArp: 0.014, volBass: 0.020, volDrum: 0.010, volPad: 0.007 },
+    { id: 'segah', name: { az: 'Səgah', tr: 'Segah', en: 'Segah' }, desc: { az: 'Sirli, sehrli gecə əhvalı', tr: 'Gizemli, mistik gece havası', en: 'Mysterious, mystical night mood' }, icon: '✨', tempo: 440,
+      melody:    [0, 2, 1, 4, 2, 1, 0, 2, 1, 4, 5, 4, 2, 1, 0, 2],
+      arpeggio:  [0, 4, 2, 5, 2, 1, 0, 2, 0, 4, 2, 5, 2, 1, 0, 2],
+      bass:      [0, 0, 1, 1, 2, 2, 4, 4, 0, 0, 1, 1, 2, 2, 4, 4],
+      drum:      [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+      chordPad:  [0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4],
+      scale: [196, 220, 233.08, 293.66, 329.63, 349.23, 392, 440, 523.25],
+      waveType: 'sine', volMelody: 0.022, volArp: 0.012, volBass: 0.015, volDrum: 0.006, volPad: 0.006 },
+    { id: 'chahargah', name: { az: 'Çahargah', tr: 'Çahargah', en: 'Chahargah' }, desc: { az: 'Döyüş, qəhrəman əhval', tr: 'Savaş, kahraman havası', en: 'Battle, heroic mood' }, icon: '🔥', tempo: 320,
+      melody:    [0, 1, 3, 4, 3, 1, 0, 1, 3, 4, 6, 4, 3, 1, 0, 3],
+      arpeggio:  [0, 3, 1, 4, 3, 1, 0, 3, 0, 3, 1, 4, 3, 1, 0, 3],
+      bass:      [0, 0, 0, 0, 3, 3, 3, 3, 1, 1, 1, 1, 4, 4, 4, 4],
+      drum:      [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1],
+      chordPad:  [0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4],
+      scale: [261.63, 277.18, 311.13, 349.23, 392, 415.30, 466.16, 523.25, 622.25],
+      waveType: 'triangle', volMelody: 0.028, volArp: 0.015, volBass: 0.022, volDrum: 0.012, volPad: 0.008 },
   ];
   let currentMusicId = localStorage.getItem('xalcaMusic') || 'shur';
   let currentTrack = MUSIC_TRACKS.find(tr => tr.id === currentMusicId) || MUSIC_TRACKS[1];
@@ -1361,8 +1542,57 @@
     osc.stop(t0 + duration + 0.05);
   }
 
+  function playNoteWithFilter(freq, duration, type, volume, delay, filterFreq) {
+    if (!soundOn || !freq) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime + (delay || 0);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(filterFreq || 2000, t0);
+    filter.Q.setValueAtTime(1, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(volume, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.05);
+  }
+
+  function playDrumHit(delay, isKick) {
+    if (!soundOn) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime + (delay || 0);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    if (isKick) {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(120, t0);
+      osc.frequency.exponentialRampToValueAtTime(40, t0 + 0.08);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(currentTrack.volDrum || 0.01, t0 + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.15);
+    } else {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(800, t0);
+      osc.frequency.exponentialRampToValueAtTime(200, t0 + 0.03);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime((currentTrack.volDrum || 0.01) * 0.5, t0 + 0.002);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+    }
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.2);
+  }
+
   function playBassNote(freq, delay) {
-    if (!soundOn || !currentTrack.scale) return;
+    if (!soundOn || !currentTrack.melody) return;
     ensureAudio();
     const t0 = audioCtx.currentTime + (delay || 0);
     const osc = audioCtx.createOscillator();
@@ -1370,12 +1600,12 @@
     osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, t0);
     gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.exponentialRampToValueAtTime(0.015, t0 + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 3.5);
+    gain.gain.exponentialRampToValueAtTime(currentTrack.volBass || 0.018, t0 + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + (currentTrack.tempo / 1000) * 0.9);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start(t0);
-    osc.stop(t0 + 3.6);
+    osc.stop(t0 + (currentTrack.tempo / 1000) + 0.1);
   }
 
   function playPlaceSound() { playTone(250, 0.09, 'triangle', 0.18); playTone(120, 0.09, 'sine', 0.1, 0.01); }
@@ -1383,6 +1613,14 @@
     const base = 420 + Math.min(comboCount, 6) * 90;
     playTone(base, 0.18, 'triangle', 0.22);
     playTone(base * 1.5, 0.22, 'sine', 0.14, 0.05);
+    if (comboCount >= 3) {
+      playTone(base * 2, 0.15, 'sine', 0.1, 0.03);
+      playTone(base * 2.5, 0.12, 'sine', 0.08, 0.06);
+    }
+    if (comboCount >= 5) {
+      playTone(base * 3, 0.1, 'sine', 0.06, 0.08);
+      playTone(base * 0.5, 0.25, 'triangle', 0.12, 0);
+    }
   }
   function playBombSound() {
     playTone(90, 0.35, 'sawtooth', 0.22);
@@ -1395,18 +1633,47 @@
 
   function startMusic() {
     if (musicTimer) return;
-    if (!currentTrack.scale) return;
+    if (!currentTrack.melody) return;
     ensureAudio();
+    const stepDur = currentTrack.tempo / 1000;
     function playNext() {
-      if (!soundOn || !currentTrack.scale) { musicTimer = null; return; }
+      if (!soundOn || !currentTrack.melody) { musicTimer = null; return; }
       const track = currentTrack;
-      const note = track.scale[(musicStep * 3) % track.scale.length];
-      playTone(note / 2, 2.4, track.waveType, track.volume);
-      if (musicStep % 4 === 0) playBassNote(track.bassNote, 0);
-      musicStep++;
-      if (musicStep >= NOTES_PER_TRACK) {
-        musicStep = 0;
+      const step = musicStep % NOTES_PER_TRACK;
+      const sc = track.scale;
+      const wt = track.waveType || 'sine';
+
+      const melIdx = track.melody[step];
+      if (melIdx !== undefined && sc[melIdx]) {
+        playNoteWithFilter(sc[melIdx] * 2, stepDur * 0.9, wt, track.volMelody, 0, 3000);
       }
+
+      const arpIdx = track.arpeggio[step];
+      if (arpIdx !== undefined && sc[arpIdx]) {
+        playNoteWithFilter(sc[arpIdx] * 3, stepDur * 0.5, 'sine', track.volArp, stepDur * 0.25, 4000);
+      }
+
+      const bassIdx = track.bass[step];
+      if (bassIdx !== undefined && sc[bassIdx]) {
+        playBassNote(sc[bassIdx] / 2, 0);
+      }
+
+      const drumHit = track.drum[step];
+      if (drumHit) {
+        playDrumHit(0, drumHit === 1);
+        if (drumHit === 1) playDrumHit(stepDur * 0.5, false);
+      }
+
+      if (step % 2 === 0) {
+        const padIdx = track.chordPad[step];
+        if (padIdx !== undefined && sc[padIdx]) {
+          playNoteWithFilter(sc[padIdx], stepDur * 2, 'sine', track.volPad, 0, 800);
+          playNoteWithFilter(sc[padIdx] * 1.5, stepDur * 2, 'sine', track.volPad * 0.6, 0, 800);
+        }
+      }
+
+      musicStep++;
+      if (musicStep >= NOTES_PER_TRACK) musicStep = 0;
       musicTimer = setTimeout(playNext, track.tempo);
     }
     musicTimer = setTimeout(playNext, 0);
@@ -1653,12 +1920,48 @@
     const idx = Math.min(comboCount, words.length - 1);
     const word = words[idx];
     if (!word) return;
+    const tier = comboCount >= 5 ? 4 : comboCount >= 4 ? 3 : comboCount >= 2 ? 2 : 1;
     const el = document.createElement('div');
-    el.className = 'combo-text';
-    el.style.fontSize = (20 + Math.min(comboCount, 5) * 3) + 'px';
+    el.className = 'combo-text' + (tier > 1 ? ' tier-' + tier : '');
+    el.style.fontSize = (20 + Math.min(comboCount, 6) * 4) + 'px';
     el.textContent = (comboCount > 1 ? comboCount + 'x ' : '') + word;
     boardWrap.appendChild(el);
-    setTimeout(() => el.remove(), 900);
+    setTimeout(() => el.remove(), 1000);
+
+    if (tier >= 2) {
+      const flash = document.createElement('div');
+      flash.className = 'combo-flash' + (tier >= 3 ? ' tier-' + tier : '');
+      boardWrap.appendChild(flash);
+      setTimeout(() => flash.remove(), 600);
+    }
+
+    if (tier >= 2) {
+      const particleCount = tier >= 4 ? 18 : tier >= 3 ? 12 : 8;
+      const frag = document.createDocumentFragment();
+      const particles = [];
+      const colors = ['#ffdd32', '#ff8a3d', '#ff5e7a', '#c084fc', '#4ade80'];
+      for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement('div');
+        p.className = 'combo-particle';
+        const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.3;
+        const dist = 50 + Math.random() * 60;
+        p.style.left = '50%';
+        p.style.top = '38%';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+        p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+        p.style.animation = `particleBurst ${0.5 + Math.random() * 0.3}s ease-out forwards`;
+        frag.appendChild(p);
+        particles.push(p);
+      }
+      boardWrap.appendChild(frag);
+      setTimeout(() => { for (const p of particles) p.remove(); }, 900);
+    }
+
+    comboEl.classList.remove('glow-combo');
+    void comboEl.offsetWidth;
+    comboEl.classList.add('glow-combo');
+
     speakWord(COMBO_SPEECH[idx]);
   }
 
