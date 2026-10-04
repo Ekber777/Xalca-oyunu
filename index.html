@@ -511,6 +511,120 @@
   .lb-score { font-weight: 700; color: var(--gold); flex-shrink: 0; }
   #lbFooter { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; flex-shrink: 0; }
 
+  /* ---- Çoxlu sətir animasiyası ---- */
+  .multi-clear-banner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 26;
+  }
+  .multi-clear-banner span {
+    font-family: 'Newsreader', serif;
+    font-weight: 700;
+    font-size: 30px;
+    color: #fff3b0;
+    text-shadow: 0 0 24px rgba(255,221,50,0.9), 0 0 12px rgba(212,162,58,0.8), 0 2px 8px rgba(0,0,0,0.6);
+    animation: multiClearPop 1.1s cubic-bezier(.2,1.6,.4,1) forwards;
+    text-align: center;
+    padding: 0 20px;
+    white-space: nowrap;
+  }
+  @keyframes multiClearPop {
+    0% { transform: scale(0.2) rotate(-8deg); opacity: 0; }
+    20% { transform: scale(1.3) rotate(3deg); opacity: 1; }
+    35% { transform: scale(1) rotate(-1deg); opacity: 1; }
+    50% { transform: scale(1.08) rotate(1deg); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: scale(1.15) translateY(-20px); opacity: 0; }
+  }
+  .line-flash {
+    animation: lineFlash 0.4s ease-out forwards;
+  }
+  @keyframes lineFlash {
+    0% { filter: brightness(1.5); transform: scale(1.05); }
+    50% { filter: brightness(2.5); transform: scale(1.08); }
+    100% { filter: brightness(1); transform: scale(1); opacity: 0; }
+  }
+
+  /* ---- Xalça tərəqqi bar ---- */
+  #carpetProgress {
+    width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  #carpetLabelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+  }
+  #carpetName { font-family: 'Newsreader', serif; color: var(--gold); font-weight: 700; font-size: 13px; }
+  #carpetPct { color: var(--cream-dim); font-weight: 700; }
+  #carpetBarWrap {
+    height: 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  #carpetBar {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--gold), #f0c060);
+    transition: width 0.5s cubic-bezier(.3,1.2,.4,1);
+  }
+  #carpetPreview {
+    text-align: center;
+    font-size: 10px;
+    color: var(--cream-dim);
+    margin-top: 1px;
+    min-height: 14px;
+  }
+
+  /* ---- Musiqi seçici ---- */
+  #musicModal {
+    position: fixed; inset: 0; z-index: 110;
+    background: rgba(10, 6, 20, 0.88);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  #musicModal.hide { display: none; }
+  #musicCard {
+    background: linear-gradient(160deg, var(--bg-mid), var(--bg-deep));
+    border: 1px solid var(--gold-soft);
+    border-radius: 18px;
+    padding: 22px 20px;
+    max-width: 340px;
+    width: 100%;
+    animation: helpPop 0.3s cubic-bezier(.3,1.5,.4,1) both;
+  }
+  #musicCard h2 { font-family: 'Newsreader', serif; color: var(--gold); margin: 0 0 14px; font-size: 20px; text-align: center; }
+  .music-track-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%;
+    background: var(--surface-strong);
+    border: 1px solid var(--gold-soft);
+    color: var(--cream);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    margin-bottom: 7px;
+    text-align: left;
+  }
+  .music-track-btn.active { background: linear-gradient(135deg, var(--gold), #b8842a); color: #241533; border-color: var(--gold); font-weight: 700; }
+  .music-track-btn .track-icon { font-size: 18px; flex-shrink: 0; }
+  .music-track-btn .track-info { flex: 1; }
+  .music-track-btn .track-name { font-size: 14px; }
+  .music-track-btn .track-desc { font-size: 11px; opacity: 0.7; }
+  #musicCloseBtn { width: 100%; margin-top: 8px; }
+
   .toast {
     position: fixed;
     bottom: 24px;
@@ -548,11 +662,18 @@
       <button class="iconBtn lang" id="langBtn" title="Dil">AZ</button>
       <button class="iconBtn" id="helpBtn" title="Necə oynanılır">❓</button>
       <button class="iconBtn" id="shareBtn" title="Paylaş">📤</button>
+      <button class="iconBtn" id="musicBtn" title="Musiqi">🎵</button>
       <button class="iconBtn" id="soundToggle" title="Səsi aç/bağla">🔊</button>
     </div>
   </div>
 
   <div id="dailyBanner"></div>
+
+  <div id="carpetProgress">
+    <div id="carpetLabelRow"><span id="carpetName">Quba</span><span id="carpetPct">0%</span></div>
+    <div id="carpetBarWrap"><div id="carpetBar"></div></div>
+    <div id="carpetPreview"></div>
+  </div>
 
   <div id="hud">
     <div class="box"><div class="label" id="labelScore">Xal</div><div class="value" id="score">0</div></div>
@@ -628,6 +749,14 @@
       <button id="lbEditNameBtn" class="secondary">Adımı dəyiş</button>
       <button id="lbCloseBtn">Bağla</button>
     </div>
+  </div>
+</div>
+
+<div id="musicModal" class="hide">
+  <div id="musicCard">
+    <h2 id="musicTitleEl">Musiqi seç</h2>
+    <div id="musicTrackList"></div>
+    <button id="musicCloseBtn" class="secondary">Bağla</button>
   </div>
 </div>
 
@@ -834,6 +963,11 @@
       shareText: (s) => `Xalça oyununda ${s} xal topladım! 🧶 Sən bacararsan?`,
       comboWords: ['', 'Gözəl!', 'Əla!', 'Möhtəşəm!', 'Heyrətamiz!', 'Dahiyanə!', 'Əfsanəvi!'],
       bonusDayLabel: 'xal günü', streakLabel: 'gün ardıcıl',
+      multiClear2: 'İkili toxunuş!', multiClear3: 'Üçlü toxunuş!', multiClear4: 'Dördlü toxunuş!',
+      carpetProgressLabel: 'Xalça tamamlanırı', musicTitle: 'Musiqi seç', musicClose: 'Bağla',
+      musicOff: 'Söndür', musicOffDesc: 'Musiqi olmadan oyna',
+      carpetNames: { quba: 'Quba', qarabag: 'Qarabağ', tebriz: 'Təbriz', shirvan: 'Şirvan', gazakh: 'Qazax' },
+      carpetDescs: { quba: 'Səkkizguşəli ulduz və həndəsi naxışlar', qarabag: 'Əyri ləçək və çiçək kompozisiyaları', tebriz: 'Müqərnəs və nəbati naxışlar', shirvan: 'Xətai və bəndlik naxışlar', gazakh: 'Qoşbuqalı və həndəsi ornamentlər' },
     },
     tr: {
       sub: 'deseni ör', xal: 'Puan', best: 'En iyi', combo: 'Seri',
@@ -866,6 +1000,11 @@
       shareText: (s) => `Xalça oyununda ${s} puan topladım! 🧶 Sen yapabilir misin?`,
       comboWords: ['', 'Güzel!', 'Harika!', 'Muhteşem!', 'Şaşırtıcı!', 'Dahiyane!', 'Efsanevi!'],
       bonusDayLabel: 'puan günü', streakLabel: 'gün üst üste',
+      multiClear2: 'İkili dokunuş!', multiClear3: 'Üçlü dokunuş!', multiClear4: 'Dörtlü dokunuş!',
+      carpetProgressLabel: 'Halı tamamlanıyor', musicTitle: 'Müzik seç', musicClose: 'Kapat',
+      musicOff: 'Kapalı', musicOffDesc: 'Müzik olmadan oyna',
+      carpetNames: { quba: 'Kuba', qarabag: 'Karabağ', tebriz: 'Tebriz', shirvan: 'Şirvan', gazakh: 'Kazak' },
+      carpetDescs: { quba: 'Sekiz köşeli yıldız ve geometrik desenler', qarabag: 'Eğri kemer ve çiçek kompozisyonları', tebriz: 'Mukarnas ve nebatî desenler', shirvan: 'Hatai ve bendlik desenler', gazakh: 'İkiz bukak ve geometrik ornamentler' },
     },
     en: {
       sub: 'weave the pattern', xal: 'Score', best: 'Best', combo: 'Streak',
@@ -898,6 +1037,11 @@
       shareText: (s) => `I scored ${s} points in Xalça! 🧶 Can you beat it?`,
       comboWords: ['', 'Nice!', 'Great!', 'Awesome!', 'Amazing!', 'Incredible!', 'Legendary!'],
       bonusDayLabel: 'score day', streakLabel: 'day streak',
+      multiClear2: 'Double weave!', multiClear3: 'Triple weave!', multiClear4: 'Quad weave!',
+      carpetProgressLabel: 'Carpet weaving', musicTitle: 'Choose music', musicClose: 'Close',
+      musicOff: 'Off', musicOffDesc: 'Play without music',
+      carpetNames: { quba: 'Quba', qarabag: 'Karabakh', tebriz: 'Tabriz', shirvan: 'Shirvan', gazakh: 'Gazakh' },
+      carpetDescs: { quba: 'Octagonal stars and geometric patterns', qarabag: 'Curved arches and floral compositions', tebriz: 'Mugarnas and botanical motifs', shirvan: 'Khatai and bendluk patterns', gazakh: 'Twin medallions and geometric ornaments' },
     },
   };
   const LANG_CYCLE = ['az', 'tr', 'en'];
@@ -974,6 +1118,7 @@
     document.getElementById('lbTitleEl').textContent = t('lbTitle');
     document.getElementById('lbEditNameBtn').textContent = t('lbEditName');
     document.getElementById('lbCloseBtn').textContent = t('lbClose');
+    updateCarpetProgress();
   }
 
   const THEMES = [
@@ -985,6 +1130,56 @@
   ];
   let COLORS = THEMES[0].colors;
   const BOMB_COLOR = '#2a2a2a';
+
+  // ========== TARIXI AZƏRBAYCAN XALÇALARI — tərəqqi sistemi ==========
+  const CARPETS = [
+    { id: 'quba', unlockScore: 0, maxScore: 500 },
+    { id: 'qarabag', unlockScore: 0, maxScore: 1500 },
+    { id: 'tebriz', unlockScore: 0, maxScore: 3000 },
+    { id: 'shirvan', unlockScore: 0, maxScore: 5000 },
+    { id: 'gazakh', unlockScore: 0, maxScore: 8000 },
+  ];
+  let carpetIdx = 0;
+
+  function updateCarpetProgress() {
+    while (carpetIdx < CARPETS.length - 1 && score >= CARPETS[carpetIdx].maxScore) {
+      carpetIdx++;
+    }
+    const carpet = CARPETS[carpetIdx];
+    const prevMax = carpetIdx > 0 ? CARPETS[carpetIdx - 1].maxScore : 0;
+    const pct = Math.min(100, Math.round(((score - prevMax) / (carpet.maxScore - prevMax)) * 100));
+    const nameEl = document.getElementById('carpetName');
+    const pctEl = document.getElementById('carpetPct');
+    const barEl = document.getElementById('carpetBar');
+    const previewEl = document.getElementById('carpetPreview');
+    if (nameEl) nameEl.textContent = t('carpetNames')[carpet.id];
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (barEl) barEl.style.width = pct + '%';
+    if (previewEl) {
+      if (pct >= 100) previewEl.textContent = '✓ ' + t('carpetNames')[carpet.id];
+      else previewEl.textContent = t('carpetDescs')[carpet.id];
+    }
+  }
+
+  // ========== MILLI MUSIQI SISTEMI ==========
+  // Proqram tərəfindən yaradılan muğam ladları — heç bir real əsərin surəti deyil, telif haqqı yoxdur
+  const MUSIC_TRACKS = [
+    { id: 'off', nameKey: 'musicOff', descKey: 'musicOffDesc', icon: '🔇', scale: null, tempo: 0, volume: 0 },
+    { id: 'shur', name: { az: 'Şur', tr: 'Şur', en: 'Shur' }, desc: { az: 'Sakit, aramlı muğam əhvalı', tr: 'Sakin, huzurlu makam havası', en: 'Calm, serene mugham mood' }, icon: '🌙',
+      scale: [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37], tempo: 2100, volume: 0.022, waveType: 'sine', bassNote: 110 },
+    { id: 'bayati', name: { az: 'Bayatı', tr: 'Bayati', en: 'Bayati' }, desc: { az: 'Həsrətli, lirik əhval', tr: 'Özlemli, lirik hava', en: 'Yearning, lyrical mood' }, icon: '🌅',
+      scale: [220, 233.08, 277.18, 293.66, 329.63, 349.23, 415.30, 440], tempo: 1900, volume: 0.024, waveType: 'sine', bassNote: 98 },
+    { id: 'rast', name: { az: 'Rast', tr: 'Rast', en: 'Rast' }, desc: { az: 'Festivial, mərd əhval', tr: 'Festiv, coşkulu hava', en: 'Festive, bold mood' }, icon: '⚔️',
+      scale: [220, 233.08, 277.18, 293.66, 349.23, 369.99, 415.30, 440], tempo: 1600, volume: 0.025, waveType: 'triangle', bassNote: 130.81 },
+    { id: 'segah', name: { az: 'Səgah', tr: 'Segah', en: 'Segah' }, desc: { az: 'Sirli, sehrli əhval', tr: 'Gizemli, mistik hava', en: 'Mysterious, mystical mood' }, icon: '✨',
+      scale: [196, 220, 233.08, 293.66, 329.63, 349.23, 392, 440], tempo: 2000, volume: 0.022, waveType: 'sine', bassNote: 73.42 },
+    { id: 'chahargah', name: { az: 'Çahargah', tr: 'Çahargah', en: 'Chahargah' }, desc: { az: 'Döyüş, qəhrəman əhval', tr: 'Savaş, kahraman havası', en: 'Battle, heroic mood' }, icon: '🔥',
+      scale: [261.63, 277.18, 311.13, 349.23, 392, 415.30, 466.16, 523.25], tempo: 1400, volume: 0.026, waveType: 'triangle', bassNote: 65.41 },
+  ];
+  let currentMusicId = localStorage.getItem('xalcaMusic') || 'shur';
+  let currentTrack = MUSIC_TRACKS.find(tr => tr.id === currentMusicId) || MUSIC_TRACKS[1];
+  let musicStep = 0;
+  const NOTES_PER_TRACK = 16;
 
   let unlockedThemesCache = null;
   function getUnlockedThemeIds() {
@@ -1143,14 +1338,6 @@
   const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
   let audioCtx = null;
   let musicTimer = null;
-  const MUSIC_PLAYLIST = [
-    [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37],
-    [220, 233.08, 277.18, 293.66, 329.63, 349.23, 415.30, 440],
-    [220, 233.08, 277.18, 293.66, 349.23, 369.99, 415.30, 440],
-  ];
-  let musicTrackIdx = 0;
-  let musicStep = 0;
-  const NOTES_PER_TRACK = 16;
 
   function ensureAudio() {
     if (!audioCtx) audioCtx = new AudioCtxClass();
@@ -1174,6 +1361,23 @@
     osc.stop(t0 + duration + 0.05);
   }
 
+  function playBassNote(freq, delay) {
+    if (!soundOn || !currentTrack.scale) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime + (delay || 0);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.015, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 3.5);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 3.6);
+  }
+
   function playPlaceSound() { playTone(250, 0.09, 'triangle', 0.18); playTone(120, 0.09, 'sine', 0.1, 0.01); }
   function playClearSound(comboCount) {
     const base = 420 + Math.min(comboCount, 6) * 90;
@@ -1189,21 +1393,21 @@
   function playHammerSound() { playTone(150, 0.12, 'square', 0.2); playTone(80, 0.15, 'sine', 0.15, 0.02); }
   function playShuffleSound() { playTone(320, 0.1, 'triangle', 0.15); playTone(420, 0.1, 'triangle', 0.15, 0.08); playTone(520, 0.12, 'triangle', 0.15, 0.16); }
 
-  // ===== PERFORMANCE: setTimeout zənciri setInterval əvəzinə (drift yoxdur) =====
   function startMusic() {
     if (musicTimer) return;
+    if (!currentTrack.scale) return;
     ensureAudio();
     function playNext() {
-      if (!soundOn) { musicTimer = null; return; }
-      const track = MUSIC_PLAYLIST[musicTrackIdx];
-      const note = track[(musicStep * 3) % track.length];
-      playTone(note / 2, 2.4, 'sine', 0.022);
+      if (!soundOn || !currentTrack.scale) { musicTimer = null; return; }
+      const track = currentTrack;
+      const note = track.scale[(musicStep * 3) % track.scale.length];
+      playTone(note / 2, 2.4, track.waveType, track.volume);
+      if (musicStep % 4 === 0) playBassNote(track.bassNote, 0);
       musicStep++;
       if (musicStep >= NOTES_PER_TRACK) {
         musicStep = 0;
-        musicTrackIdx = (musicTrackIdx + 1) % MUSIC_PLAYLIST.length;
       }
-      musicTimer = setTimeout(playNext, 1900);
+      musicTimer = setTimeout(playNext, track.tempo);
     }
     musicTimer = setTimeout(playNext, 0);
   }
@@ -1216,6 +1420,42 @@
     if (soundOn) { ensureAudio(); startMusic(); } else { stopMusic(); }
     localStorage.setItem('xalcaSound', soundOn ? '1' : '0');
   });
+
+  // ---- Musiqi seçici modal ----
+  const musicBtn = document.getElementById('musicBtn');
+  const musicModal = document.getElementById('musicModal');
+  const musicCloseBtn = document.getElementById('musicCloseBtn');
+  const musicTrackList = document.getElementById('musicTrackList');
+
+  function renderMusicTracks() {
+    musicTrackList.innerHTML = '';
+    for (const track of MUSIC_TRACKS) {
+      const btn = document.createElement('button');
+      btn.className = 'music-track-btn' + (track.id === currentMusicId ? ' active' : '');
+      let name, desc;
+      if (track.id === 'off') { name = t('musicOff'); desc = t('musicOffDesc'); }
+      else { name = track.name[currentLang]; desc = track.desc[currentLang]; }
+      btn.innerHTML = `<span class="track-icon">${track.icon}</span><div class="track-info"><div class="track-name">${name}</div><div class="track-desc">${desc}</div></div>`;
+      btn.addEventListener('click', () => {
+        currentMusicId = track.id;
+        currentTrack = track;
+        localStorage.setItem('xalcaMusic', track.id);
+        stopMusic();
+        if (track.id !== 'off' && soundOn) startMusic();
+        renderMusicTracks();
+      });
+      musicTrackList.appendChild(btn);
+    }
+  }
+
+  musicBtn.addEventListener('click', () => {
+    document.getElementById('musicTitleEl').textContent = t('musicTitle');
+    musicCloseBtn.textContent = t('musicClose');
+    renderMusicTracks();
+    musicModal.classList.remove('hide');
+  });
+  musicCloseBtn.addEventListener('click', () => musicModal.classList.add('hide'));
+  musicModal.addEventListener('click', (e) => { if (e.target === musicModal) musicModal.classList.add('hide'); });
 
   function unlockAudioOnce() {
     ensureAudio();
@@ -1492,6 +1732,8 @@
       showComboText(combo);
       playClearSound(combo);
       vibrate([15, 15, 15 + combo * 6]);
+      // ---- Çoxlu sətir/sütun xüsusi animasiya ----
+      if (totalLines >= 2) showMultiClearBanner(totalLines);
       noClearStreak = 0;
       for (const r of fullRows) {
         for (let c = 0; c < SIZE; c++) {
@@ -1534,6 +1776,25 @@
       bestEl.textContent = best;
       localStorage.setItem('xalcaBest', String(best));
       submitScoreIfBest(best);
+    }
+    updateCarpetProgress();
+  }
+
+  function showMultiClearBanner(lineCount) {
+    const key = lineCount >= 4 ? 'multiClear4' : lineCount === 3 ? 'multiClear3' : 'multiClear2';
+    const text = t(key);
+    const banner = document.createElement('div');
+    banner.className = 'multi-clear-banner';
+    banner.innerHTML = `<span>${text}</span>`;
+    boardWrap.appendChild(banner);
+    setTimeout(() => banner.remove(), 1100);
+    // Extra vibraziya ilə xüsusi effektlər
+    vibrate([30, 30, 60]);
+    // Əlavə parlaq notlar
+    if (soundOn) {
+      playTone(660, 0.15, 'triangle', 0.18, 0);
+      playTone(880, 0.2, 'sine', 0.14, 0.08);
+      playTone(1100, 0.25, 'sine', 0.1, 0.16);
     }
   }
 
@@ -1893,6 +2154,7 @@
     score = 0;
     combo = 0;
     noClearStreak = 0;
+    carpetIdx = 0;
     nextIceAt = gameMode === 'hard' ? 250 : 400;
     hammerUses = gameMode === 'hard' ? 1 : 2;
     bombUses = gameMode === 'hard' ? 1 : 2;
@@ -1907,6 +2169,7 @@
     gameOver = false;
     tray = [null, null, null];
     overlay.classList.add('hide');
+    updateCarpetProgress();
     refillTray();
     if (soundOn) startMusic();
   }
@@ -1954,6 +2217,7 @@
   updateHammerUI();
   updateBombUI();
   updateShuffleUI();
+  updateCarpetProgress();
   applyLanguage();
 
   // ===== PERFORMANCE: resize handler rAF ilə debounce olunub =====
