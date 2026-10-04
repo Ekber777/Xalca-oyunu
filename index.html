@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
   :root {
     --bg-deep: #1b1330;
@@ -60,23 +63,23 @@
   #titleRow h1 { font-family: 'Newsreader', serif; font-weight: 700; font-size: 26px; margin: 0; letter-spacing: 0.5px; color: var(--gold); }
   #titleRow .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); opacity: 0.5; }
   #titleRow .sub { font-size: 12px; color: var(--cream-dim); font-style: italic; font-family: 'Newsreader', serif; }
-  #btnGroup { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; gap: 5px; }
+  #btnGroup { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
   .iconBtn {
     background: var(--surface);
     border: 1px solid var(--gold-soft);
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 27px;
+    height: 27px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
     padding: 0;
     color: var(--cream);
     flex-shrink: 0;
   }
-  @media (max-width: 360px) {
+  @media (max-width: 400px) {
     #titleRow .sub, #titleRow .dot { display: none; }
   }
   .iconBtn:active { transform: scale(0.92); }
@@ -427,7 +430,7 @@
 
   .iconBtn.lang { font-size: 11px; font-weight: 800; }
 
-  #adModal, #helpModal {
+  #nameModal, #leaderboardModal, #adModal, #helpModal {
     position: fixed; inset: 0; z-index: 110;
     background: rgba(10, 6, 20, 0.88);
     display: flex; align-items: center; justify-content: center;
@@ -450,6 +453,63 @@
   #adProgressWrap.hide { display: none; }
   #adProgressBar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), #ff8a3d); }
   #adButtons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  #nameCard {
+    background: linear-gradient(160deg, var(--bg-mid), var(--bg-deep));
+    border: 1px solid var(--gold-soft);
+    border-radius: 18px;
+    padding: 22px 20px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    animation: helpPop 0.3s cubic-bezier(.3,1.5,.4,1) both;
+  }
+  #nameCard h2 { font-family: 'Newsreader', serif; color: var(--gold); margin: 0 0 8px; font-size: 20px; }
+  #nameCard p { color: var(--cream-dim); font-size: 13px; margin: 0 0 14px; }
+  #nameInput {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--gold-soft);
+    background: rgba(255,255,255,0.08);
+    color: var(--cream);
+    font-size: 15px;
+    font-family: 'Manrope', sans-serif;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  #nameInput:focus { outline: none; border-color: var(--gold); }
+  #nameButtons { display: flex; justify-content: center; }
+
+  #leaderboardCard {
+    background: linear-gradient(160deg, var(--bg-mid), var(--bg-deep));
+    border: 1px solid var(--gold-soft);
+    border-radius: 18px;
+    padding: 20px 18px;
+    max-width: 380px;
+    width: 100%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    animation: helpPop 0.3s cubic-bezier(.3,1.5,.4,1) both;
+  }
+  #leaderboardCard h2 { font-family: 'Newsreader', serif; color: var(--gold); margin: 0 0 14px; font-size: 20px; text-align: center; flex-shrink: 0; }
+  #lbList { overflow-y: auto; flex: 1; min-height: 100px; margin-bottom: 14px; }
+  #lbLoading { text-align: center; color: var(--cream-dim); font-size: 13px; padding: 20px 0; }
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    font-size: 13.5px;
+  }
+  .lb-row.me { background: rgba(212,162,58,0.18); border: 1px solid var(--gold-soft); }
+  .lb-rank { width: 24px; font-weight: 800; color: var(--gold); flex-shrink: 0; text-align: center; }
+  .lb-name { flex: 1; color: var(--cream); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-score { font-weight: 700; color: var(--gold); flex-shrink: 0; }
+  #lbFooter { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; flex-shrink: 0; }
 
   .toast {
     position: fixed;
@@ -480,6 +540,7 @@
     <span class="dot"></span>
     <span class="sub" id="titleSub">naxış toxu</span>
     <div id="btnGroup">
+      <button class="iconBtn" id="leaderboardBtn" title="Dünya sıralaması">🏆</button>
       <button class="iconBtn" id="homeBtn" title="Ana ekrana dön">🏠</button>
       <button class="iconBtn lang" id="langBtn" title="Dil">AZ</button>
       <button class="iconBtn" id="helpBtn" title="Necə oynanılır">❓</button>
@@ -545,6 +606,28 @@
   </div>
 </div>
 
+<div id="nameModal" class="hide">
+  <div id="nameCard">
+    <h2 id="nameTitleEl">Adını seç</h2>
+    <p id="nameDescEl">Dünya sıralamasında bu adla görünəcəksən.</p>
+    <input type="text" id="nameInput" maxlength="18" placeholder="Adın...">
+    <div id="nameButtons">
+      <button id="nameSaveBtn">Saxla</button>
+    </div>
+  </div>
+</div>
+
+<div id="leaderboardModal" class="hide">
+  <div id="leaderboardCard">
+    <h2 id="lbTitleEl">🏆 Dünya sıralaması</h2>
+    <div id="lbList"><div id="lbLoading">Yüklənir...</div></div>
+    <div id="lbFooter">
+      <button id="lbEditNameBtn" class="secondary">Adımı dəyiş</button>
+      <button id="lbCloseBtn">Bağla</button>
+    </div>
+  </div>
+</div>
+
 <div id="adModal" class="hide">
   <div id="adCard">
     <h2 id="adTitleEl">Reklama bax</h2>
@@ -572,6 +655,110 @@
   const boardWrap = document.getElementById('boardWrap');
   const soundToggleBtn = document.getElementById('soundToggle');
   const shareBtn = document.getElementById('shareBtn');
+  // ========== FIREBASE: DÜNYA SIRALAMASI ==========
+  const firebaseConfig = {
+    apiKey: "AIzaSyB3vTn9Er7kGqWUYbIkESFiR5EqEzUPpaE",
+    authDomain: "xalca-oyun.firebaseapp.com",
+    projectId: "xalca-oyun",
+    storageBucket: "xalca-oyun.firebasestorage.app",
+    messagingSenderId: "904604012163",
+    appId: "1:904604012163:web:1703ece0c843e0722795b6"
+  };
+  let fbApp = null, fbAuth = null, fbDb = null, fbUid = null, fbReady = false;
+  try {
+    fbApp = firebase.initializeApp(firebaseConfig);
+    fbAuth = firebase.auth();
+    fbDb = firebase.firestore();
+    fbAuth.signInAnonymously().catch((e) => console.error('Firebase auth error:', e));
+    fbAuth.onAuthStateChanged((user) => {
+      if (user) { fbUid = user.uid; fbReady = true; }
+    });
+  } catch (e) {
+    console.error('Firebase init failed:', e);
+  }
+
+  function getPlayerName() { return localStorage.getItem('xalcaPlayerName') || ''; }
+  function setPlayerName(name) { localStorage.setItem('xalcaPlayerName', name); }
+
+  async function submitScoreIfBest(scoreValue) {
+    if (!fbReady || !fbDb || !fbUid) return;
+    const name = getPlayerName();
+    if (!name) return; // ad qoyulmayıbsa, göndərmə
+    try {
+      await fbDb.collection('leaderboard').doc(fbUid).set({
+        name: name,
+        score: scoreValue,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (e) { console.error('Leaderboard yazma xətası:', e); }
+  }
+
+  async function loadLeaderboard() {
+    const lbList = document.getElementById('lbList');
+    if (!fbDb) { lbList.innerHTML = `<div id="lbLoading">${t('lbError')}</div>`; return; }
+    lbList.innerHTML = `<div id="lbLoading">${t('lbLoading')}</div>`;
+    try {
+      const snapshot = await fbDb.collection('leaderboard').orderBy('score', 'desc').limit(50).get();
+      if (snapshot.empty) {
+        lbList.innerHTML = `<div id="lbLoading">${t('lbEmpty')}</div>`;
+        return;
+      }
+      let html = '';
+      let rank = 0;
+      snapshot.forEach((doc) => {
+        rank++;
+        const d = doc.data();
+        const isMe = doc.id === fbUid;
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+        html += `<div class="lb-row${isMe ? ' me' : ''}"><div class="lb-rank">${medal}</div><div class="lb-name">${escapeHtml(d.name || '?')}</div><div class="lb-score">${d.score}</div></div>`;
+      });
+      lbList.innerHTML = html;
+    } catch (e) {
+      console.error(e);
+      lbList.innerHTML = `<div id="lbLoading">${t('lbError')}</div>`;
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  const leaderboardBtn = document.getElementById('leaderboardBtn');
+  const leaderboardModal = document.getElementById('leaderboardModal');
+  const lbCloseBtn = document.getElementById('lbCloseBtn');
+  const lbEditNameBtn = document.getElementById('lbEditNameBtn');
+  const nameModal = document.getElementById('nameModal');
+  const nameInput = document.getElementById('nameInput');
+  const nameSaveBtn = document.getElementById('nameSaveBtn');
+
+  function openNameModal() {
+    nameInput.value = getPlayerName();
+    nameModal.classList.remove('hide');
+    setTimeout(() => nameInput.focus(), 100);
+  }
+  nameSaveBtn.addEventListener('click', () => {
+    const val = nameInput.value.trim().slice(0, 18);
+    if (!val) return;
+    setPlayerName(val);
+    nameModal.classList.add('hide');
+    submitScoreIfBest(best);
+    leaderboardModal.classList.remove('hide');
+    loadLeaderboard();
+  });
+  nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameSaveBtn.click(); });
+
+  leaderboardBtn.addEventListener('click', () => {
+    if (!getPlayerName()) { openNameModal(); return; }
+    leaderboardModal.classList.remove('hide');
+    loadLeaderboard();
+  });
+  lbCloseBtn.addEventListener('click', () => leaderboardModal.classList.add('hide'));
+  lbEditNameBtn.addEventListener('click', () => { leaderboardModal.classList.add('hide'); openNameModal(); });
+  leaderboardModal.addEventListener('click', (e) => { if (e.target === leaderboardModal) leaderboardModal.classList.add('hide'); });
+  nameModal.addEventListener('click', (e) => { if (e.target === nameModal) nameModal.classList.add('hide'); });
+
   const helpBtn = document.getElementById('helpBtn');
   const helpModal = document.getElementById('helpModal');
   const helpCloseBtn = document.getElementById('helpCloseBtn');
@@ -608,6 +795,9 @@
       pausedTitle: 'Fasilə', resumeBtn: 'Davam et', restartBtn: 'Yenidən başla', backToHomeBtn: 'Ana ekrana dön',
       modeZen: 'Zen', modeNormal: 'Normal', modeHard: 'Çətin',
       help10t: 'Qarışdırma aləti', help10d: 'Aşağıdakı 3 parçanı yenisi ilə əvəz et. Hər oyunda 2 pulsuz haqqın var, sonra reklamla yenisini qazanırsan.',
+      nameTitle: 'Adını seç', nameDesc: 'Dünya sıralamasında bu adla görünəcəksən.', nameSave: 'Saxla', namePlaceholder: 'Adın...',
+      lbTitle: '🏆 Dünya sıralaması', lbEditName: 'Adımı dəyiş', lbClose: 'Bağla',
+      lbEmpty: 'Hələ heç kim yoxdur. İlk sən ol!', lbLoading: 'Yüklənir...', lbError: 'Yüklənmədi, bağlantını yoxla.',
       help1t: 'Parçanı yerləşdir', help1d: 'Aşağıdakı 3 parçadan birinə toxun, şəbəkəyə sürüşdür, barmağını qaldıranda yerləşəcək.',
       help2t: 'Sətir/sütun tamamla', help2d: 'Bir sıranı tamamən doldursan, o sıra avtomatik təmizlənir və xal qazanırsan.',
       help3t: 'Silsilə (kombo)', help3d: 'Ard-arda sıra təmizləsən, bonus xal artır, ekranda "Əla!", "Möhtəşəm!" kimi sözlər çıxır.',
@@ -637,6 +827,9 @@
       pausedTitle: 'Duraklat', resumeBtn: 'Devam et', restartBtn: 'Yeniden başla', backToHomeBtn: 'Ana menüye dön',
       modeZen: 'Zen', modeNormal: 'Normal', modeHard: 'Zor',
       help10t: 'Karıştırma aracı', help10d: 'Aşağıdaki 3 parçayı yenisiyle değiştir. Her oyunda 2 ücretsiz hakkın var, sonra reklamla yenisini kazanırsın.',
+      nameTitle: 'Adını seç', nameDesc: 'Dünya sıralamasında bu adla görüneceksin.', nameSave: 'Kaydet', namePlaceholder: 'Adın...',
+      lbTitle: '🏆 Dünya sıralaması', lbEditName: 'Adımı değiştir', lbClose: 'Kapat',
+      lbEmpty: 'Henüz kimse yok. İlk sen ol!', lbLoading: 'Yükleniyor...', lbError: 'Yüklenemedi, bağlantıyı kontrol et.',
       help1t: 'Parçayı yerleştir', help1d: 'Aşağıdaki 3 parçadan birine dokun, ızgaraya sürükle, parmağını kaldırınca yerleşecek.',
       help2t: 'Satır/sütun tamamla', help2d: 'Bir satırı tamamen doldurursan, otomatik temizlenir ve puan kazanırsın.',
       help3t: 'Seri (kombo)', help3d: 'Art arda satır temizlersen, bonus puan artar, ekranda "Harika!", "Muhteşem!" gibi kelimeler çıkar.',
@@ -666,6 +859,9 @@
       pausedTitle: 'Paused', resumeBtn: 'Resume', restartBtn: 'Restart', backToHomeBtn: 'Back to home',
       modeZen: 'Zen', modeNormal: 'Normal', modeHard: 'Hard',
       help10t: 'Shuffle tool', help10d: 'Swap out the current 3 pieces for new ones. 2 free uses per game, then watch an ad for more.',
+      nameTitle: 'Choose your name', nameDesc: "You'll appear on the world leaderboard with this name.", nameSave: 'Save', namePlaceholder: 'Your name...',
+      lbTitle: '🏆 World Leaderboard', lbEditName: 'Edit my name', lbClose: 'Close',
+      lbEmpty: 'No one yet. Be the first!', lbLoading: 'Loading...', lbError: 'Failed to load, check your connection.',
       help1t: 'Place a piece', help1d: 'Touch one of the 3 pieces below, drag it onto the grid, release to place it.',
       help2t: 'Complete a row/column', help2d: 'Fill an entire row or column and it clears automatically, earning points.',
       help3t: 'Streak (combo)', help3d: 'Clear rows back to back for bonus points — words like "Nice!", "Amazing!" appear.',
@@ -753,6 +949,13 @@
     renderThemeRow();
     renderModeRow();
     renderDailyBanner();
+    document.getElementById('nameTitleEl').textContent = t('nameTitle');
+    document.getElementById('nameDescEl').textContent = t('nameDesc');
+    document.getElementById('nameSaveBtn').textContent = t('nameSave');
+    document.getElementById('nameInput').placeholder = t('namePlaceholder');
+    document.getElementById('lbTitleEl').textContent = t('lbTitle');
+    document.getElementById('lbEditNameBtn').textContent = t('lbEditName');
+    document.getElementById('lbCloseBtn').textContent = t('lbClose');
   }
 
   const THEMES = [
@@ -1275,6 +1478,7 @@
       best = score;
       bestEl.textContent = best;
       localStorage.setItem('xalcaBest', String(best));
+      submitScoreIfBest(best);
     }
   }
 
@@ -1424,6 +1628,12 @@
       explodeBomb(r, c);
       renderGrid();
       scoreEl.textContent = score;
+      if (score > best) {
+        best = score;
+        bestEl.textContent = best;
+        localStorage.setItem('xalcaBest', String(best));
+        submitScoreIfBest(best);
+      }
       bombUses--;
       updateBombUI();
       deactivateTools();
