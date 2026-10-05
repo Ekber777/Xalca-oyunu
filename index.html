@@ -12,8 +12,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
   :root {
-    --bg-deep: #1b1330;
-    --bg-mid: #2a1b3d;
+    --bg-deep: #0d1b2a;
+    --bg-mid: #1b3a5b;
     --surface: rgba(244, 235, 221, 0.07);
     --surface-strong: rgba(244, 235, 221, 0.12);
     --gold: #d4a23a;
@@ -33,7 +33,7 @@
   html, body {
     height: 100%;
     margin: 0;
-    background: radial-gradient(ellipse at top, var(--bg-mid) 0%, var(--bg-deep) 60%);
+    background: var(--bg-deep);
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--cream);
     overflow: hidden;
@@ -42,6 +42,19 @@
     -webkit-user-select: none;
     user-select: none;
   }
+  #app::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(64,156,255,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 20% 30%, rgba(30,100,200,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 40% at 80% 60%, rgba(100,180,255,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(40,120,220,0.07) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #app > * { position: relative; z-index: 1; }
   #app {
     height: 100%;
     display: flex;
@@ -105,12 +118,13 @@
   #boardWrap {
     width: 100%;
     aspect-ratio: 1 / 1;
-    background: linear-gradient(135deg, var(--surface-strong), var(--surface));
+    background: linear-gradient(135deg, rgba(244,235,221,0.14), rgba(244,235,221,0.06));
     border-radius: 18px;
     padding: 12px;
     flex-shrink: 0;
     position: relative;
     border: 1px solid var(--gold-soft);
+    box-shadow: 0 0 24px rgba(212,162,58,0.06), inset 0 0 20px rgba(212,162,58,0.03);
   }
   #boardWrap::before { content: ''; position: absolute; inset: 5px; border: 1.5px dashed var(--gold-soft); border-radius: 12px; pointer-events: none; }
   .corner { position: absolute; width: 14px; height: 14px; border: 1.5px solid var(--gold); opacity: 0.6; pointer-events: none; }
@@ -168,14 +182,36 @@
   }
   .cell.exploding { animation: explode 0.3s ease-out forwards; }
   .cell.ice {
-    background: linear-gradient(145deg, #eaf7ff, #cdeaf9 60%, #e4f6ff);
-    box-shadow: inset 0 0 5px rgba(255,255,255,0.9);
-    border: 1px solid rgba(255,255,255,0.8);
+    background: linear-gradient(160deg, #a8d8ea, #7ec8e3 50%, #5fb3d4) !important;
+    box-shadow: inset 0 0 6px rgba(255,255,255,0.7), inset 0 0 14px rgba(168,216,234,0.5), 0 0 4px rgba(126,200,227,0.4) !important;
+    border: 1px solid rgba(255,255,255,0.6) !important;
+    position: relative;
+  }
+  .cell.ice::after {
+    content: '❄';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    color: rgba(255,255,255,0.8);
+    text-shadow: 0 0 4px rgba(255,255,255,0.6);
+    pointer-events: none;
   }
   .cell.ice-1 {
-    background: linear-gradient(145deg, #dcf0fb, #b9e2f2 60%, #d5eefb);
-    box-shadow: inset 0 0 3px rgba(255,255,255,0.7);
-    border: 1px solid rgba(255,255,255,0.5);
+    background: linear-gradient(160deg, #c1e3f0, #9dd3e8 50%, #7ec0db) !important;
+    box-shadow: inset 0 0 4px rgba(255,255,255,0.5), inset 0 0 10px rgba(193,227,240,0.4) !important;
+    border: 1px solid rgba(255,255,255,0.4) !important;
+    opacity: 0.88;
+  }
+  .cell.ice-1::after {
+    content: '❄';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 7px;
+    color: rgba(255,255,255,0.5);
+    text-shadow: 0 0 3px rgba(255,255,255,0.4);
+    pointer-events: none;
   }
   @keyframes explode {
     0% { transform: scale(1); filter: brightness(2); }
@@ -719,6 +755,85 @@
   .music-track-btn .track-desc { font-size: 11px; opacity: 0.7; }
   #musicCloseBtn { width: 100%; margin-top: 8px; }
 
+  /* ---- Ayarlar paneli ---- */
+  #settingsModal {
+    position: fixed; inset: 0; z-index: 110;
+    background: rgba(10, 6, 20, 0.88);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  #settingsModal.hide { display: none; }
+  #settingsCard {
+    background: linear-gradient(160deg, var(--bg-mid), var(--bg-deep));
+    border: 1px solid var(--gold-soft);
+    border-radius: 18px;
+    padding: 22px 20px;
+    max-width: 360px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: helpPop 0.3s cubic-bezier(.3,1.5,.4,1) both;
+  }
+  #settingsCard h2 { font-family: 'Newsreader', serif; color: var(--gold); margin: 0 0 16px; font-size: 22px; text-align: center; }
+  .settings-section { margin-bottom: 16px; }
+  .settings-section h3 { font-size: 12px; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px; }
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-strong); border: 1px solid var(--gold-soft);
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 6px;
+    font-size: 14px; color: var(--cream);
+  }
+  .settings-row .setting-label { display: flex; align-items: center; gap: 8px; }
+  .settings-row .setting-label .icon { font-size: 16px; }
+  .settings-toggle {
+    width: 42px; height: 24px; border-radius: 12px;
+    background: rgba(255,255,255,0.12); border: 1px solid var(--gold-soft);
+    position: relative; cursor: pointer; flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .settings-toggle.on { background: linear-gradient(135deg, var(--gold), #b8842a); }
+  .settings-toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--cream); transition: transform 0.2s;
+  }
+  .settings-toggle.on::after { transform: translateX(18px); }
+  .settings-select {
+    background: var(--surface-strong); border: 1px solid var(--gold-soft);
+    border-radius: 8px; padding: 6px 10px; color: var(--cream);
+    font-size: 13px; font-family: 'Manrope', sans-serif; cursor: pointer;
+  }
+  #settingsCloseBtn { width: 100%; margin-top: 8px; }
+
+  /* ---- Profil bölməsi ---- */
+  #profileSection {
+    width: 100%; flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--gold-soft);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  #profileAvatar {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--gold), #b8842a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #241533; font-weight: 800;
+    font-family: 'Newsreader', serif;
+  }
+  #profileInfo { flex: 1; min-width: 0; }
+  #profileName { font-family: 'Newsreader', serif; font-weight: 700; color: var(--gold); font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #profileStats { display: flex; gap: 10px; font-size: 10px; color: var(--cream-dim); margin-top: 2px; }
+  #profileStats span { display: flex; align-items: center; gap: 3px; }
+  #profileRank { font-size: 11px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+
+  /* ---- Continue / reward button ---- */
+  #overlayBtnContinue {
+    background: linear-gradient(135deg, #2d9d5f, #1e7d4f);
+    color: #fff; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px; justify-content: center;
+  }
+
   .toast {
     position: fixed;
     bottom: 24px;
@@ -751,14 +866,25 @@
     <span class="dot"></span>
     <span class="sub" id="titleSub">naxış toxu</span>
     <div id="btnGroup">
+      <button class="iconBtn" id="settingsBtn" title="Ayarlar">⚙️</button>
       <button class="iconBtn" id="leaderboardBtn" title="Dünya sıralaması">🏆</button>
       <button class="iconBtn" id="homeBtn" title="Ana ekrana dön">🏠</button>
-      <button class="iconBtn lang" id="langBtn" title="Dil">AZ</button>
       <button class="iconBtn" id="helpBtn" title="Necə oynanılır">❓</button>
       <button class="iconBtn" id="shareBtn" title="Paylaş">📤</button>
-      <button class="iconBtn" id="musicBtn" title="Musiqi">🎵</button>
-      <button class="iconBtn" id="soundToggle" title="Səsi aç/bağla">🔊</button>
     </div>
+  </div>
+
+  <div id="profileSection">
+    <div id="profileAvatar">?</div>
+    <div id="profileInfo">
+      <div id="profileName">—</div>
+      <div id="profileStats">
+        <span id="statGames">🎮 0</span>
+        <span id="statBest">🏆 0</span>
+        <span id="statWins">✅ 0</span>
+      </div>
+    </div>
+    <div id="profileRank">#—</div>
   </div>
 
   <div id="dailyBanner"></div>
@@ -799,6 +925,7 @@
       </div>
       <div id="themeRow"></div>
       <div id="overlayButtons">
+        <button id="overlayBtnContinue" class="hide">📺 Reklama bax və davam et</button>
         <button id="overlayBtn">Toxumağa başla</button>
         <button id="overlayBtn2" class="secondary hide">Yenidən başla</button>
       </div>
@@ -860,6 +987,42 @@
   </div>
 </div>
 
+<div id="settingsModal" class="hide">
+  <div id="settingsCard">
+    <h2 id="settingsTitleEl">Ayarlar</h2>
+    <div class="settings-section">
+      <h3 id="settingsSoundTitle">Səs</h3>
+      <div class="settings-row">
+        <div class="setting-label"><span class="icon">🔊</span><span id="settingsSoundLabel">Səs effektləri</span></div>
+        <div class="settings-toggle on" id="soundToggle2"></div>
+      </div>
+      <div class="settings-row" style="cursor:pointer" id="musicRow">
+        <div class="setting-label"><span class="icon">🎵</span><span id="settingsMusicLabel">Musiqi</span></div>
+        <select class="settings-select" id="musicSelect"></select>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3 id="settingsLangTitle">Dil</h3>
+      <div class="settings-row" style="cursor:pointer" id="langRow">
+        <div class="setting-label"><span class="icon">🌐</span><span id="settingsLangLabel">Dil</span></div>
+        <select class="settings-select" id="langSelect">
+          <option value="az">Azərbaycan</option>
+          <option value="tr">Türkçe</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3 id="settingsProfileTitle">Profil</h3>
+      <div class="settings-row" style="cursor:pointer" id="editNameRow">
+        <div class="setting-label"><span class="icon">✏️</span><span id="settingsEditNameLabel">Adımı dəyiş</span></div>
+        <span style="color:var(--cream-dim);font-size:12px">›</span>
+      </div>
+    </div>
+    <button id="settingsCloseBtn">Bağla</button>
+  </div>
+</div>
+
 <div id="adModal" class="hide">
   <div id="adCard">
     <h2 id="adTitleEl">Reklama bax</h2>
@@ -885,8 +1048,8 @@
   const bestEl = document.getElementById('best');
   const comboEl = document.getElementById('combo');
   const boardWrap = document.getElementById('boardWrap');
-  const soundToggleBtn = document.getElementById('soundToggle');
   const shareBtn = document.getElementById('shareBtn');
+  const overlayBtnContinue = document.getElementById('overlayBtnContinue');
 
   // ========== PERFORMANCE: dirty cell tracking ==========
   // renderGrid əvəzinə yalnız dəyişən xanaları yeniləyirik
@@ -927,6 +1090,68 @@
   function getPlayerName() { return localStorage.getItem('xalcaPlayerName') || ''; }
   function setPlayerName(name) { localStorage.setItem('xalcaPlayerName', name); }
 
+  function getStats() {
+    try { return JSON.parse(localStorage.getItem('xalcaStats') || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveStats(s) { localStorage.setItem('xalcaStats', JSON.stringify(s)); }
+  function recordGameResult(finalScore) {
+    const s = getStats();
+    s.games = (s.games || 0) + 1;
+    s.best = Math.max(s.best || 0, finalScore);
+    if (finalScore > 0 && finalScore >= best) s.wins = (s.wins || 0) + 1;
+    saveStats(s);
+    updateProfile();
+    submitStatsToFirebase(s);
+  }
+  function submitStatsToFirebase(s) {
+    if (!fbReady || !fbDb || !fbUid) return;
+    try {
+      fbDb.collection('leaderboard').doc(fbUid).set({
+        name: getPlayerName(),
+        score: s.best || 0,
+        games: s.games || 0,
+        wins: s.wins || 0,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (e) { console.error('Stats yazma xətası:', e); }
+  }
+
+  function updateProfile() {
+    const name = getPlayerName();
+    const s = getStats();
+    const avatar = document.getElementById('profileAvatar');
+    const nameEl = document.getElementById('profileName');
+    const statGames = document.getElementById('statGames');
+    const statBest = document.getElementById('statBest');
+    const statWins = document.getElementById('statWins');
+    if (name) {
+      avatar.textContent = name.charAt(0).toUpperCase();
+      nameEl.textContent = name;
+    } else {
+      avatar.textContent = '?';
+      nameEl.textContent = t('nameRequired');
+    }
+    statGames.textContent = '🎮 ' + (s.games || 0);
+    statBest.textContent = '🏆 ' + (s.best || 0);
+    statWins.textContent = '✅ ' + (s.wins || 0);
+  }
+
+  async function loadProfileRank() {
+    if (!fbReady || !fbDb || !fbUid) return;
+    try {
+      const snapshot = await fbDb.collection('leaderboard').orderBy('score', 'desc').limit(100).get();
+      let rank = 0;
+      snapshot.forEach((doc, i) => {
+        if (doc.id === fbUid) rank = i + 1;
+      });
+      const rankEl = document.getElementById('profileRank');
+      if (rank > 0) rankEl.textContent = '#' + rank;
+      else if (getPlayerName()) rankEl.textContent = '#100+';
+      else rankEl.textContent = '#—';
+    } catch (e) { }
+  }
+
   async function submitScoreIfBest(scoreValue) {
     if (!fbReady || !fbDb || !fbUid) return;
     const name = getPlayerName();
@@ -936,9 +1161,10 @@
         name: name,
         score: scoreValue,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      }, { merge: true });
       weeklyChampLoaded = false;
       loadWeeklyChampion();
+      loadProfileRank();
     } catch (e) { console.error('Leaderboard yazma xətası:', e); }
   }
 
@@ -1025,10 +1251,12 @@
   const nameInput = document.getElementById('nameInput');
   const nameSaveBtn = document.getElementById('nameSaveBtn');
 
-  function openNameModal() {
+  let nameModalCallback = null;
+  function openNameModal(callback) {
     nameInput.value = getPlayerName();
     nameModal.classList.remove('hide');
     setTimeout(() => nameInput.focus(), 100);
+    if (callback) nameModalCallback = callback;
   }
   nameSaveBtn.addEventListener('click', () => {
     const val = nameInput.value.trim().slice(0, 18);
@@ -1036,13 +1264,14 @@
     setPlayerName(val);
     nameModal.classList.add('hide');
     submitScoreIfBest(best);
-    leaderboardModal.classList.remove('hide');
-    loadLeaderboard();
+    updateProfile();
+    loadProfileRank();
+    if (nameModalCallback) { nameModalCallback(); nameModalCallback = null; }
   });
   nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameSaveBtn.click(); });
 
   leaderboardBtn.addEventListener('click', () => {
-    if (!getPlayerName()) { openNameModal(); return; }
+    if (!getPlayerName()) { openNameModal(() => { leaderboardModal.classList.remove('hide'); loadLeaderboard(); }); return; }
     leaderboardModal.classList.remove('hide');
     loadLeaderboard();
   });
@@ -1054,7 +1283,6 @@
   const helpBtn = document.getElementById('helpBtn');
   const helpModal = document.getElementById('helpModal');
   const helpCloseBtn = document.getElementById('helpCloseBtn');
-  const langBtn = document.getElementById('langBtn');
   const hammerBtn = document.getElementById('hammerBtn');
   const hammerCountEl = document.getElementById('hammerCount');
   const bombBtn = document.getElementById('bombBtn');
@@ -1114,6 +1342,10 @@
       carpetNames: { quba: 'Quba', qarabag: 'Qarabağ', tebriz: 'Təbriz', shirvan: 'Şirvan', gazakh: 'Qazax' },
       carpetDescs: { quba: 'Səkkizguşəli ulduz və həndəsi naxışlar', qarabag: 'Əyri ləçək və çiçək kompozisiyaları', tebriz: 'Müqərnəs və nəbati naxışlar', shirvan: 'Xətai və bəndlik naxışlar', gazakh: 'Qoşbuqalı və həndəsi ornamentlər' },
       weeklyChampion: 'Bu həftənin qalibi', weeklyYou: 'Sən', weeklyLoading: 'Həftə qalibi yüklənir...', weeklyNone: 'Hələ qalib yoxdur', weeklyScore: 'xal',
+      settingsTitle: 'Ayarlar', settingsSound: 'Səs effektləri', settingsMusic: 'Musiqi', settingsLang: 'Dil', settingsEditName: 'Adımı dəyiş', settingsClose: 'Bağla',
+      settingsSoundSection: 'Səs', settingsLangSection: 'Dil', settingsProfileSection: 'Profil',
+      continueBtn: '📺 Reklama bax və davam et', continueUsed: 'Bu oyunda artıq istifadə etdin', statGames: 'Oyun', statBest: 'Ən yaxşı', statWins: 'Qələbə',
+      nameRequired: 'Oynamaq üçün ad seçməlisən!', profileRankLabel: 'Sıra',
     },
     tr: {
       sub: 'deseni ör', xal: 'Puan', best: 'En iyi', combo: 'Seri',
@@ -1152,6 +1384,10 @@
       carpetNames: { quba: 'Kuba', qarabag: 'Karabağ', tebriz: 'Tebriz', shirvan: 'Şirvan', gazakh: 'Kazak' },
       carpetDescs: { quba: 'Sekiz köşeli yıldız ve geometrik desenler', qarabag: 'Eğri kemer ve çiçek kompozisyonları', tebriz: 'Mukarnas ve nebatî desenler', shirvan: 'Hatai ve bendlik desenler', gazakh: 'İkiz bukak ve geometrik ornamentler' },
       weeklyChampion: 'Bu haftanın şampiyonu', weeklyYou: 'Sen', weeklyLoading: 'Hafta şampiyonu yükleniyor...', weeklyNone: 'Henüz şampiyon yok', weeklyScore: 'puan',
+      settingsTitle: 'Ayarlar', settingsSound: 'Ses efektleri', settingsMusic: 'Müzik', settingsLang: 'Dil', settingsEditName: 'Adımı değiştir', settingsClose: 'Kapat',
+      settingsSoundSection: 'Ses', settingsLangSection: 'Dil', settingsProfileSection: 'Profil',
+      continueBtn: '📺 Reklamı izle ve devam et', continueUsed: 'Bu oyunda zaten kullandın', statGames: 'Oyun', statBest: 'En iyi', statWins: 'Zafer',
+      nameRequired: 'Oynamak için bir ad seçmelisin!', profileRankLabel: 'Sıra',
     },
     en: {
       sub: 'weave the pattern', xal: 'Score', best: 'Best', combo: 'Streak',
@@ -1190,6 +1426,10 @@
       carpetNames: { quba: 'Quba', qarabag: 'Karabakh', tebriz: 'Tabriz', shirvan: 'Shirvan', gazakh: 'Gazakh' },
       carpetDescs: { quba: 'Octagonal stars and geometric patterns', qarabag: 'Curved arches and floral compositions', tebriz: 'Mugarnas and botanical motifs', shirvan: 'Khatai and bendluk patterns', gazakh: 'Twin medallions and geometric ornaments' },
       weeklyChampion: 'This week\'s champion', weeklyYou: 'You', weeklyLoading: 'Loading weekly champion...', weeklyNone: 'No champion yet', weeklyScore: 'points',
+      settingsTitle: 'Settings', settingsSound: 'Sound effects', settingsMusic: 'Music', settingsLang: 'Language', settingsEditName: 'Edit my name', settingsClose: 'Close',
+      settingsSoundSection: 'Sound', settingsLangSection: 'Language', settingsProfileSection: 'Profile',
+      continueBtn: '📺 Watch ad & continue', continueUsed: 'Already used this game', statGames: 'Games', statBest: 'Best', statWins: 'Wins',
+      nameRequired: 'Choose a name to play!', profileRankLabel: 'Rank',
     },
   };
   const LANG_CYCLE = ['az', 'tr', 'en'];
@@ -1198,15 +1438,7 @@
     const val = STRINGS[currentLang][key];
     return val !== undefined ? val : STRINGS.az[key];
   }
-  function updateLangBtn() { langBtn.textContent = currentLang.toUpperCase(); }
-  langBtn.addEventListener('click', () => {
-    const idx = LANG_CYCLE.indexOf(currentLang);
-    currentLang = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
-    localStorage.setItem('xalcaLang', currentLang);
-    updateLangBtn();
-    applyLanguage();
-  });
-  updateLangBtn();
+
 
   const HELP_ITEMS = [
     { icon: '🧩', key: 'help1' }, { icon: '✅', key: 'help2' }, { icon: '🔥', key: 'help3' },
@@ -1224,27 +1456,38 @@
   let overlayMode = 'start';
   let lastGameScore = 0;
   let lastIsNewBest = false;
+  let continueUsed = false;
+
   function renderOverlayTexts() {
     const h2 = document.querySelector('#overlay h2');
     const overlayBtn2El = document.getElementById('overlayBtn2');
     const modeRowEl = document.getElementById('modeRow');
-    modeRowEl.classList.toggle('hide', overlayMode === 'paused');
+    modeRowEl.classList.toggle('hide', overlayMode === 'paused' || overlayMode === 'gameover');
+    document.getElementById('themeRow').classList.toggle('hide', overlayMode === 'paused' || overlayMode === 'gameover');
     if (overlayMode === 'start') {
       h2.textContent = 'Xalça';
       overlayText.textContent = t('introText');
       overlayBtn.textContent = t('startBtn');
       overlayBtn2El.classList.add('hide');
+      overlayBtnContinue.classList.add('hide');
     } else if (overlayMode === 'paused') {
       h2.textContent = t('pausedTitle');
       overlayText.textContent = t('scoreLabel') + score;
       overlayBtn.textContent = t('resumeBtn');
       overlayBtn2El.textContent = t('backToHomeBtn');
       overlayBtn2El.classList.remove('hide');
+      overlayBtnContinue.classList.add('hide');
     } else {
       h2.textContent = t('gameOverTitle');
       overlayText.textContent = t('scoreLabel') + lastGameScore + (lastIsNewBest ? t('newBest') : '');
       overlayBtn.textContent = t('playAgainBtn');
       overlayBtn2El.classList.add('hide');
+      if (!continueUsed && lastGameScore > 0) {
+        overlayBtnContinue.textContent = t('continueBtn');
+        overlayBtnContinue.classList.remove('hide');
+      } else {
+        overlayBtnContinue.classList.add('hide');
+      }
     }
   }
 
@@ -1268,14 +1511,15 @@
     document.getElementById('lbCloseBtn').textContent = t('lbClose');
     document.getElementById('champLabelEl').textContent = t('weeklyChampion');
     updateCarpetProgress();
+    updateProfile();
   }
 
   const THEMES = [
     { id: 'kilim', names: { az: 'Kilim', tr: 'Kilim', en: 'Kilim' }, unlockScore: 0, colors: ['#c1432e', '#d4a23a', '#1d7a6e', '#7a3f6b', '#33538f', '#b5651d'] },
-    { id: 'xezer', names: { az: 'Xəzər', tr: 'Hazar', en: 'Caspian' }, unlockScore: 300, colors: ['#1a5f7a', '#2f9c95', '#5bc0be', '#0d3b53', '#3a7ca5', '#6fb3b8'] },
-    { id: 'naringi', names: { az: 'Nar bağı', tr: 'Nar Bahçesi', en: 'Pomegranate Grove' }, unlockScore: 800, colors: ['#e8603c', '#f2a65a', '#d8345f', '#f7cac9', '#c0392b', '#e67e22'] },
-    { id: 'zumrud', names: { az: 'Zümrüd', tr: 'Zümrüt', en: 'Emerald' }, unlockScore: 1500, colors: ['#1e7d4f', '#52b788', '#2d6a4f', '#40916c', '#74c69d', '#1b4332'] },
-    { id: 'gece', names: { az: 'Gecə', tr: 'Gece', en: 'Night' }, unlockScore: 3000, colors: ['#3d348b', '#7678ed', '#f7b801', '#f35b04', '#2b2d42', '#8338ec'] },
+    { id: 'xezer', names: { az: 'Xəzər', tr: 'Hazar', en: 'Caspian' }, unlockScore: 2000, colors: ['#1a5f7a', '#2f9c95', '#5bc0be', '#0d3b53', '#3a7ca5', '#6fb3b8'] },
+    { id: 'naringi', names: { az: 'Nar bağı', tr: 'Nar Bahçesi', en: 'Pomegranate Grove' }, unlockScore: 10000, colors: ['#e8603c', '#f2a65a', '#d8345f', '#f7cac9', '#c0392b', '#e67e22'] },
+    { id: 'zumrud', names: { az: 'Zümrüd', tr: 'Zümrüt', en: 'Emerald' }, unlockScore: 25000, colors: ['#1e7d4f', '#52b788', '#2d6a4f', '#40916c', '#74c69d', '#1b4332'] },
+    { id: 'gece', names: { az: 'Gecə', tr: 'Gece', en: 'Night' }, unlockScore: 50000, colors: ['#3d348b', '#7678ed', '#f7b801', '#f35b04', '#2b2d42', '#8338ec'] },
   ];
   let COLORS = THEMES[0].colors;
   const BOMB_COLOR = '#2a2a2a';
@@ -1323,7 +1567,7 @@
       drum:      [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
       chordPad:  [0, 4, 2, 5, 0, 4, 2, 5, 0, 4, 2, 5, 0, 4, 2, 5],
       scale: [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37, 659.25],
-      waveType: 'sine', volMelody: 0.022, volArp: 0.012, volBass: 0.018, volDrum: 0.008, volPad: 0.006 },
+      waveType: 'sine', volMelody: 0.014, volArp: 0.008, volBass: 0.012, volDrum: 0.005, volPad: 0.004 },
     { id: 'bayati', name: { az: 'Bayatı', tr: 'Bayati', en: 'Bayati' }, desc: { az: 'Həsrətli, lirik dağ əhvalı', tr: 'Özlemli, lirik dağ havası', en: 'Yearning, lyrical mountain mood' }, icon: '🌅', tempo: 420,
       melody:    [0, 1, 3, 1, 0, 3, 4, 3, 1, 0, 1, 3, 4, 6, 3, 1],
       arpeggio:  [0, 3, 1, 6, 3, 1, 0, 1, 0, 3, 1, 6, 3, 1, 0, 1],
@@ -1331,7 +1575,7 @@
       drum:      [1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0],
       chordPad:  [0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4],
       scale: [220, 233.08, 277.18, 293.66, 329.63, 349.23, 415.30, 440, 523.25],
-      waveType: 'sine', volMelody: 0.024, volArp: 0.013, volBass: 0.016, volDrum: 0.007, volPad: 0.006 },
+      waveType: 'sine', volMelody: 0.015, volArp: 0.008, volBass: 0.010, volDrum: 0.004, volPad: 0.004 },
     { id: 'rast', name: { az: 'Rast', tr: 'Rast', en: 'Rast' }, desc: { az: 'Bayramlı, coşqulu əhval', tr: 'Festiv, coşkulu hava', en: 'Festive, energetic mood' }, icon: '⚔️', tempo: 360,
       melody:    [0, 2, 4, 6, 4, 2, 0, 2, 4, 6, 7, 6, 4, 2, 0, 2],
       arpeggio:  [0, 4, 2, 6, 4, 2, 0, 2, 0, 4, 2, 6, 4, 2, 0, 4],
@@ -1339,7 +1583,7 @@
       drum:      [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
       chordPad:  [0, 4, 2, 6, 0, 4, 2, 6, 0, 4, 2, 6, 0, 4, 2, 6],
       scale: [220, 246.94, 277.18, 329.63, 369.99, 440, 493.88, 554.37, 659.25],
-      waveType: 'triangle', volMelody: 0.026, volArp: 0.014, volBass: 0.020, volDrum: 0.010, volPad: 0.007 },
+      waveType: 'triangle', volMelody: 0.016, volArp: 0.009, volBass: 0.013, volDrum: 0.006, volPad: 0.005 },
     { id: 'segah', name: { az: 'Səgah', tr: 'Segah', en: 'Segah' }, desc: { az: 'Sirli, sehrli gecə əhvalı', tr: 'Gizemli, mistik gece havası', en: 'Mysterious, mystical night mood' }, icon: '✨', tempo: 440,
       melody:    [0, 2, 1, 4, 2, 1, 0, 2, 1, 4, 5, 4, 2, 1, 0, 2],
       arpeggio:  [0, 4, 2, 5, 2, 1, 0, 2, 0, 4, 2, 5, 2, 1, 0, 2],
@@ -1347,7 +1591,7 @@
       drum:      [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
       chordPad:  [0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4, 0, 1, 2, 4],
       scale: [196, 220, 233.08, 293.66, 329.63, 349.23, 392, 440, 523.25],
-      waveType: 'sine', volMelody: 0.022, volArp: 0.012, volBass: 0.015, volDrum: 0.006, volPad: 0.006 },
+      waveType: 'sine', volMelody: 0.014, volArp: 0.008, volBass: 0.010, volDrum: 0.004, volPad: 0.004 },
     { id: 'chahargah', name: { az: 'Çahargah', tr: 'Çahargah', en: 'Chahargah' }, desc: { az: 'Döyüş, qəhrəman əhval', tr: 'Savaş, kahraman havası', en: 'Battle, heroic mood' }, icon: '🔥', tempo: 320,
       melody:    [0, 1, 3, 4, 3, 1, 0, 1, 3, 4, 6, 4, 3, 1, 0, 3],
       arpeggio:  [0, 3, 1, 4, 3, 1, 0, 3, 0, 3, 1, 4, 3, 1, 0, 3],
@@ -1355,7 +1599,7 @@
       drum:      [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1],
       chordPad:  [0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4, 0, 3, 1, 4],
       scale: [261.63, 277.18, 311.13, 349.23, 392, 415.30, 466.16, 523.25, 622.25],
-      waveType: 'triangle', volMelody: 0.028, volArp: 0.015, volBass: 0.022, volDrum: 0.012, volPad: 0.008 },
+      waveType: 'triangle', volMelody: 0.018, volArp: 0.010, volBass: 0.014, volDrum: 0.007, volPad: 0.005 },
   ];
   let currentMusicId = localStorage.getItem('xalcaMusic') || 'shur';
   let currentTrack = MUSIC_TRACKS.find(tr => tr.id === currentMusicId) || MUSIC_TRACKS[1];
@@ -1448,6 +1692,17 @@
     [[1,1,0],[0,1,1]], [[0,1,1],[1,1,0]],
     [[1,1,1],[0,1,0]], [[0,1,0],[1,1,1]],
     [[1,1],[1,0]], [[1,1],[0,1]], [[1,0],[1,1]], [[0,1],[1,1]],
+    [[1,1,1],[1,1,1]], [[1,1],[1,1],[1,1]],
+    [[1,0,1],[1,1,1]], [[1,1,1],[1,0,1]],
+    [[1,1,1,1],[0,1,0,0]], [[0,1,0,0],[1,1,1,1]],
+    [[1,1],[0,1],[0,1]], [[1,1],[1,0],[1,0]],
+    [[0,1],[0,1],[1,1]], [[1,0],[1,0],[1,1]],
+    [[1,1,0],[1,1,0],[0,1,0]], [[0,1,0],[0,1,1],[0,1,1]],
+    [[1,1,1],[0,0,1]], [[1,1,1],[1,0,0]],
+    [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]],
+    [[1,1,1,1],[1,0,0,0]], [[1,0,0,0],[1,1,1,1]],
+    [[1,0],[1,0],[1,0],[1,1]], [[0,1],[0,1],[0,1],[1,1]],
+    [[1,1,1],[0,1,0],[0,1,0]], [[0,1,0],[0,1,0],[1,1,1]],
   ];
 
   // ===== PERFORMANCE: shapeCells öncədən hesablanıb saxlanılır =====
@@ -1679,50 +1934,73 @@
     musicTimer = setTimeout(playNext, 0);
   }
   function stopMusic() { if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } }
-  function updateSoundToggleUI() { soundToggleBtn.textContent = soundOn ? '🔊' : '🔇'; }
 
-  soundToggleBtn.addEventListener('click', () => {
+  // ========== AYARLAR PANELI ==========
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+  const soundToggle2 = document.getElementById('soundToggle2');
+  const musicSelect = document.getElementById('musicSelect');
+  const langSelect = document.getElementById('langSelect');
+
+  function updateSoundToggleUI() { soundToggle2.classList.toggle('on', soundOn); }
+
+  function populateMusicSelect() {
+    musicSelect.innerHTML = '';
+    for (const track of MUSIC_TRACKS) {
+      const opt = document.createElement('option');
+      opt.value = track.id;
+      opt.textContent = track.id === 'off' ? t('musicOff') : track.name[currentLang];
+      if (track.id === currentMusicId) opt.selected = true;
+      musicSelect.appendChild(opt);
+    }
+  }
+
+  settingsBtn.addEventListener('click', () => {
+    document.getElementById('settingsTitleEl').textContent = t('settingsTitle');
+    document.getElementById('settingsSoundLabel').textContent = t('settingsSound');
+    document.getElementById('settingsMusicLabel').textContent = t('settingsMusic');
+    document.getElementById('settingsLangLabel').textContent = t('settingsLang');
+    document.getElementById('settingsEditNameLabel').textContent = t('settingsEditName');
+    document.getElementById('settingsSoundTitle').textContent = t('settingsSoundSection');
+    document.getElementById('settingsLangTitle').textContent = t('settingsLangSection');
+    document.getElementById('settingsProfileTitle').textContent = t('settingsProfileSection');
+    settingsCloseBtn.textContent = t('settingsClose');
+    langSelect.value = currentLang;
+    populateMusicSelect();
+    updateSoundToggleUI();
+    settingsModal.classList.remove('hide');
+  });
+  settingsCloseBtn.addEventListener('click', () => settingsModal.classList.add('hide'));
+  settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.add('hide'); });
+
+  soundToggle2.addEventListener('click', () => {
     soundOn = !soundOn;
     updateSoundToggleUI();
     if (soundOn) { ensureAudio(); startMusic(); } else { stopMusic(); }
     localStorage.setItem('xalcaSound', soundOn ? '1' : '0');
   });
 
-  // ---- Musiqi seçici modal ----
-  const musicBtn = document.getElementById('musicBtn');
-  const musicModal = document.getElementById('musicModal');
-  const musicCloseBtn = document.getElementById('musicCloseBtn');
-  const musicTrackList = document.getElementById('musicTrackList');
-
-  function renderMusicTracks() {
-    musicTrackList.innerHTML = '';
-    for (const track of MUSIC_TRACKS) {
-      const btn = document.createElement('button');
-      btn.className = 'music-track-btn' + (track.id === currentMusicId ? ' active' : '');
-      let name, desc;
-      if (track.id === 'off') { name = t('musicOff'); desc = t('musicOffDesc'); }
-      else { name = track.name[currentLang]; desc = track.desc[currentLang]; }
-      btn.innerHTML = `<span class="track-icon">${track.icon}</span><div class="track-info"><div class="track-name">${name}</div><div class="track-desc">${desc}</div></div>`;
-      btn.addEventListener('click', () => {
-        currentMusicId = track.id;
-        currentTrack = track;
-        localStorage.setItem('xalcaMusic', track.id);
-        stopMusic();
-        if (track.id !== 'off' && soundOn) startMusic();
-        renderMusicTracks();
-      });
-      musicTrackList.appendChild(btn);
-    }
-  }
-
-  musicBtn.addEventListener('click', () => {
-    document.getElementById('musicTitleEl').textContent = t('musicTitle');
-    musicCloseBtn.textContent = t('musicClose');
-    renderMusicTracks();
-    musicModal.classList.remove('hide');
+  musicSelect.addEventListener('change', () => {
+    const trackId = musicSelect.value;
+    currentMusicId = trackId;
+    currentTrack = MUSIC_TRACKS.find(tr => tr.id === trackId) || MUSIC_TRACKS[1];
+    localStorage.setItem('xalcaMusic', trackId);
+    stopMusic();
+    if (trackId !== 'off' && soundOn) startMusic();
   });
-  musicCloseBtn.addEventListener('click', () => musicModal.classList.add('hide'));
-  musicModal.addEventListener('click', (e) => { if (e.target === musicModal) musicModal.classList.add('hide'); });
+
+  langSelect.addEventListener('change', () => {
+    currentLang = langSelect.value;
+    localStorage.setItem('xalcaLang', currentLang);
+    applyLanguage();
+    populateMusicSelect();
+  });
+
+  document.getElementById('editNameRow').addEventListener('click', () => {
+    settingsModal.classList.add('hide');
+    openNameModal();
+  });
 
   function unlockAudioOnce() {
     ensureAudio();
@@ -2290,12 +2568,15 @@
       requestAnimationFrame(() => { adProgressBar.style.width = '100%'; });
     });
     setTimeout(() => {
-      if (adTarget === 'bomb') { bombUses += 1; updateBombUI(); }
+      if (adTarget === 'continue') {
+        continueGame();
+        showToast(t('watchAdGranted'));
+      } else if (adTarget === 'bomb') { bombUses += 1; updateBombUI(); }
       else if (adTarget === 'shuffle') { shuffleUses += 1; updateShuffleUI(); }
       else { hammerUses += 1; updateHammerUI(); }
       adModal.classList.add('hide');
       adWatchBtn.disabled = false;
-      showToast(t('watchAdGranted'));
+      if (adTarget !== 'continue') showToast(t('watchAdGranted'));
     }, 2100);
   });
 
@@ -2440,9 +2721,11 @@
   }
 
   function endGame() {
+    if (gameOver) return;
     gameOver = true;
     playGameOverSound();
     vibrate(100);
+    recordGameResult(score);
     overlay.classList.remove('hide');
     overlayMode = 'gameover';
     lastGameScore = score;
@@ -2452,6 +2735,7 @@
   }
 
   function startGame() {
+    if (!getPlayerName()) { openNameModal(() => startGame()); return; }
     initGrid();
     renderGrid();
     score = 0;
@@ -2463,6 +2747,7 @@
     bombUses = gameMode === 'hard' ? 1 : 2;
     shuffleUses = gameMode === 'hard' ? 1 : 2;
     paused = false;
+    continueUsed = false;
     deactivateTools();
     updateHammerUI();
     updateBombUI();
@@ -2473,6 +2758,30 @@
     tray = [null, null, null];
     overlay.classList.add('hide');
     updateCarpetProgress();
+    refillTray();
+    if (soundOn) startMusic();
+  }
+
+  overlayBtnContinue.addEventListener('click', () => {
+    if (overlayMode !== 'gameover' || continueUsed) return;
+    openWatchAdModal('continue');
+  });
+
+  function continueGame() {
+    continueUsed = true;
+    gameOver = false;
+    const filledCells = [];
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (grid[r][c] !== null) filledCells.push([r, c]);
+    const toClear = Math.min(filledCells.length, Math.floor(SIZE * SIZE * 0.3));
+    for (let i = 0; i < toClear; i++) {
+      const idx = Math.floor(Math.random() * filledCells.length);
+      const [r, c] = filledCells.splice(idx, 1)[0];
+      grid[r][c] = null;
+      markDirty(r, c);
+    }
+    renderGrid();
+    overlay.classList.add('hide');
+    tray = [null, null, null];
     refillTray();
     if (soundOn) startMusic();
   }
@@ -2522,6 +2831,8 @@
   updateShuffleUI();
   updateCarpetProgress();
   applyLanguage();
+  updateProfile();
+  loadProfileRank();
 
   // ===== PERFORMANCE: resize handler rAF ilə debounce olunub =====
   let resizeRafPending = false;
