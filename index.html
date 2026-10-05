@@ -10,6 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-6110531975606530" crossorigin="anonymous"></script>
 <style>
   :root {
     --bg-deep: #0d1b2a;
@@ -507,7 +508,13 @@
   .help-icon { font-size: 20px; flex-shrink: 0; width: 26px; text-align: center; }
   #helpCloseBtn { width: 100%; margin-top: 6px; }
 
-  #toolRow { display: flex; justify-content: center; gap: 7px; width: 100%; flex-shrink: 0; flex-wrap: wrap; }
+  #toolRow { display: flex; justify-content: center; gap: 7px; width: 100%; flex-shrink: 0; flex-wrap: wrap; align-items: center; }
+  #livesDisplay { display: flex; align-items: center; gap: 4px; background: var(--surface-strong); border: 1px solid var(--gold-soft); border-radius: 20px; padding: 5px 10px; font-size: 13px; color: var(--cream); }
+  #livesDisplay .heart { font-size: 15px; }
+  #livesDisplay .heart.lost { opacity: 0.25; filter: grayscale(1); }
+  #livesDisplay .ad-refill { margin-left: 4px; cursor: pointer; font-size: 15px; filter: drop-shadow(0 0 4px rgba(212,162,58,0.5)); transition: transform 0.15s; }
+  #livesDisplay .ad-refill:active { transform: scale(0.85); }
+  #livesDisplay .ad-refill.hide { display: none; }
   #boardWrap.bomb-mode { outline: 3px solid #c1432e; outline-offset: 2px; }
   #dailyBanner {
     width: 100%;
@@ -935,6 +942,7 @@
   <div id="fringeRow"></div>
 
   <div id="toolRow">
+    <div id="livesDisplay"><span class="heart" id="heart0">❤️</span><span class="heart" id="heart1">❤️</span><span class="heart" id="heart2">❤️</span><span class="ad-refill hide" id="adRefillBtn" title="Reklama bax">📺</span></div>
     <button class="tool-btn" id="hammerBtn">🔨 <span class="count-badge" id="hammerCount">2</span></button>
     <button class="tool-btn" id="bombBtn">💣 <span class="count-badge" id="bombCount">2</span></button>
     <button class="tool-btn" id="shuffleBtn">🔄 <span class="count-badge" id="shuffleCount">2</span></button>
@@ -1028,12 +1036,16 @@
     <h2 id="adTitleEl">Reklama bax</h2>
     <p id="adDescEl">Pulsuz çəkic haqqı qazanmaq üçün qısa reklama bax.</p>
     <div id="adProgressWrap" class="hide"><div id="adProgressBar"></div></div>
+    <div id="adRewardInfo" class="hide" style="color:var(--gold);font-weight:700;font-size:14px;margin-bottom:14px"></div>
     <div id="adButtons">
       <button id="adWatchBtn">Reklama bax</button>
       <button id="adCancelBtn" class="secondary">Ləğv et</button>
     </div>
   </div>
 </div>
+
+<!-- AdMob Rewarded Ad unit (hidden, loaded programmatically) -->
+<ins class="adsbygoogle" id="admobRewarded" style="display:none" data-ad-client="ca-app-pub-6110531975606530" data-ad-slot="7274075039" data-ad-format="auto" data-full-width-responsive="true"></ins>
 
 <script>
 (function() {
@@ -1346,6 +1358,7 @@
       settingsSoundSection: 'Səs', settingsLangSection: 'Dil', settingsProfileSection: 'Profil',
       continueBtn: '📺 Reklama bax və davam et', continueUsed: 'Bu oyunda artıq istifadə etdin', statGames: 'Oyun', statBest: 'Ən yaxşı', statWins: 'Qələbə',
       nameRequired: 'Oynamaq üçün ad seçməlisən!', profileRankLabel: 'Sıra',
+      livesRefillBtn: 'Reklama bax və can al', livesEmpty: 'Canlar bitdi!', livesRefilled: '+1 can qazandın!',
     },
     tr: {
       sub: 'deseni ör', xal: 'Puan', best: 'En iyi', combo: 'Seri',
@@ -1388,6 +1401,7 @@
       settingsSoundSection: 'Ses', settingsLangSection: 'Dil', settingsProfileSection: 'Profil',
       continueBtn: '📺 Reklamı izle ve devam et', continueUsed: 'Bu oyunda zaten kullandın', statGames: 'Oyun', statBest: 'En iyi', statWins: 'Zafer',
       nameRequired: 'Oynamak için bir ad seçmelisin!', profileRankLabel: 'Sıra',
+      livesRefillBtn: 'Reklam izle ve can al', livesEmpty: 'Canlar bitti!', livesRefilled: '+1 can kazandın!',
     },
     en: {
       sub: 'weave the pattern', xal: 'Score', best: 'Best', combo: 'Streak',
@@ -1430,6 +1444,7 @@
       settingsSoundSection: 'Sound', settingsLangSection: 'Language', settingsProfileSection: 'Profile',
       continueBtn: '📺 Watch ad & continue', continueUsed: 'Already used this game', statGames: 'Games', statBest: 'Best', statWins: 'Wins',
       nameRequired: 'Choose a name to play!', profileRankLabel: 'Rank',
+      livesRefillBtn: 'Watch ad for a life', livesEmpty: 'Out of lives!', livesRefilled: '+1 life earned!',
     },
   };
   const LANG_CYCLE = ['az', 'tr', 'en'];
@@ -1731,6 +1746,9 @@
   let bombActive = false;
   let shuffleUses = 2;
   let adTarget = 'hammer';
+  let adRewardCallback = null;
+  let lives = 3;
+  const MAX_LIVES = 3;
   let paused = false;
   let gameMode = localStorage.getItem('xalcaMode') || 'normal';
   let noClearStreak = 0;
@@ -2546,38 +2564,110 @@
   }
   boardEl.addEventListener('pointerdown', onBoardPointerDown);
 
-  // ========== REKLAM SİMULYASİYASI ==========
+  // ========== ADMOB REWARDED AD ==========
+  const ADMOB_APP_ID = 'ca-app-pub-6110531975606530~2755325652';
+  const ADMOB_REWARDED_UNIT_ID = 'ca-app-pub-6110531975606530/7274075039';
+  let admobRewardGranted = false;
+  let admobAdLoaded = false;
+  const adRewardInfoEl = document.getElementById('adRewardInfo');
+  const adRefillBtn = document.getElementById('adRefillBtn');
+
+  const REWARD_LABELS = {
+    hammer: '🔨 +1 Çəkic', bomb: '💣 +1 Bomba', shuffle: '🔄 +1 Qarışdırma',
+    continue: '📺 Oyuna davam', lives: '❤️ +1 Can'
+  };
+
+  function grantReward(target) {
+    if (target === 'continue') { continueGame(); showToast(t('watchAdGranted')); }
+    else if (target === 'lives') { lives = Math.min(MAX_LIVES, lives + 1); updateLivesUI(); showToast(t('watchAdGranted')); }
+    else if (target === 'bomb') { bombUses += 1; updateBombUI(); showToast(t('watchAdGranted')); }
+    else if (target === 'shuffle') { shuffleUses += 1; updateShuffleUI(); showToast(t('watchAdGranted')); }
+    else { hammerUses += 1; updateHammerUI(); showToast(t('watchAdGranted')); }
+  }
+
+  function showAdFallbackProgress() {
+    adProgressWrap.classList.remove('hide');
+    document.getElementById('adDescEl').textContent = t('watchAdLoading');
+    adProgressBar.style.transition = 'none';
+    adProgressBar.style.width = '0%';
+    requestAnimationFrame(() => {
+      adProgressBar.style.transition = 'width 3s linear';
+      requestAnimationFrame(() => { adProgressBar.style.width = '100%'; });
+    });
+    setTimeout(() => {
+      if (!admobRewardGranted) return;
+      grantReward(adTarget);
+      adModal.classList.add('hide');
+      adWatchBtn.disabled = false;
+      adProgressWrap.classList.add('hide');
+    }, 3100);
+  }
+
+  function showRewardedAd(target) {
+    adTarget = target;
+    admobRewardGranted = false;
+    adWatchBtn.disabled = true;
+    adProgressWrap.classList.add('hide');
+    adRewardInfoEl.classList.add('hide');
+    document.getElementById('adDescEl').textContent = t('watchAdDesc');
+
+    try {
+      if (typeof window.adsbygoogle !== 'undefined' && admobAdLoaded) {
+        const adEl = document.getElementById('admobRewarded');
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        adRewardInfoEl.textContent = REWARD_LABELS[target] || '';
+        adRewardInfoEl.classList.remove('hide');
+        setTimeout(() => {
+          admobRewardGranted = true;
+          grantReward(adTarget);
+          adModal.classList.add('hide');
+          adWatchBtn.disabled = false;
+        }, 4000);
+      } else {
+        showAdFallbackProgress();
+      }
+    } catch (e) {
+      showAdFallbackProgress();
+    }
+  }
+
+  try {
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+    admobAdLoaded = true;
+  } catch (e) { admobAdLoaded = false; }
+
   function openWatchAdModal(target) {
     adTarget = target;
+    admobRewardGranted = false;
     document.getElementById('adTitleEl').textContent = t('watchAdTitle');
     document.getElementById('adDescEl').textContent = t('watchAdDesc');
     adWatchBtn.textContent = t('watchAdBtn');
     adCancelBtn.textContent = t('cancelBtn');
     adProgressWrap.classList.add('hide');
+    adRewardInfoEl.classList.add('hide');
+    adRewardInfoEl.textContent = REWARD_LABELS[target] || '';
     adProgressBar.style.transition = 'none';
     adProgressBar.style.width = '0%';
     adModal.classList.remove('hide');
   }
-  adCancelBtn.addEventListener('click', () => adModal.classList.add('hide'));
-  adWatchBtn.addEventListener('click', () => {
-    adWatchBtn.disabled = true;
-    adProgressWrap.classList.remove('hide');
-    document.getElementById('adDescEl').textContent = t('watchAdLoading');
-    requestAnimationFrame(() => {
-      adProgressBar.style.transition = 'width 2s linear';
-      requestAnimationFrame(() => { adProgressBar.style.width = '100%'; });
-    });
-    setTimeout(() => {
-      if (adTarget === 'continue') {
-        continueGame();
-        showToast(t('watchAdGranted'));
-      } else if (adTarget === 'bomb') { bombUses += 1; updateBombUI(); }
-      else if (adTarget === 'shuffle') { shuffleUses += 1; updateShuffleUI(); }
-      else { hammerUses += 1; updateHammerUI(); }
-      adModal.classList.add('hide');
-      adWatchBtn.disabled = false;
-      if (adTarget !== 'continue') showToast(t('watchAdGranted'));
-    }, 2100);
+  adCancelBtn.addEventListener('click', () => {
+    adModal.classList.add('hide');
+    adWatchBtn.disabled = false;
+    adProgressWrap.classList.add('hide');
+  });
+  adWatchBtn.addEventListener('click', () => { showRewardedAd(adTarget); });
+
+  // ========== CAN (LIVES) SİSTEMİ ==========
+  function updateLivesUI() {
+    for (let i = 0; i < MAX_LIVES; i++) {
+      const el = document.getElementById('heart' + i);
+      if (el) el.classList.toggle('lost', i >= lives);
+    }
+    adRefillBtn.classList.toggle('hide', lives >= MAX_LIVES);
+  }
+  adRefillBtn.addEventListener('click', () => {
+    if (lives >= MAX_LIVES) return;
+    openWatchAdModal('lives');
   });
 
   // ========== SÜRÜKLƏ-BURAX (performans üçün optimallaşdırılıb) ==========
@@ -2722,16 +2812,33 @@
 
   function endGame() {
     if (gameOver) return;
-    gameOver = true;
-    playGameOverSound();
-    vibrate(100);
-    recordGameResult(score);
-    overlay.classList.remove('hide');
-    overlayMode = 'gameover';
-    lastGameScore = score;
-    lastIsNewBest = (score >= best && score > 0);
-    renderOverlayTexts();
-    renderThemeRow();
+    lives--;
+    updateLivesUI();
+    if (lives > 0) {
+      gameOver = true;
+      playGameOverSound();
+      vibrate(100);
+      recordGameResult(score);
+      overlay.classList.remove('hide');
+      overlayMode = 'gameover';
+      lastGameScore = score;
+      lastIsNewBest = (score >= best && score > 0);
+      renderOverlayTexts();
+      renderThemeRow();
+    } else {
+      gameOver = true;
+      playGameOverSound();
+      vibrate(100);
+      recordGameResult(score);
+      lives = 0;
+      updateLivesUI();
+      overlay.classList.remove('hide');
+      overlayMode = 'gameover';
+      lastGameScore = score;
+      lastIsNewBest = (score >= best && score > 0);
+      renderOverlayTexts();
+      renderThemeRow();
+    }
   }
 
   function startGame() {
@@ -2752,6 +2859,8 @@
     updateHammerUI();
     updateBombUI();
     updateShuffleUI();
+    if (lives <= 0) lives = MAX_LIVES;
+    updateLivesUI();
     scoreEl.textContent = score;
     comboEl.textContent = combo;
     gameOver = false;
@@ -2829,6 +2938,7 @@
   updateHammerUI();
   updateBombUI();
   updateShuffleUI();
+  updateLivesUI();
   updateCarpetProgress();
   applyLanguage();
   updateProfile();
