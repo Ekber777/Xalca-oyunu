@@ -7,9 +7,9 @@
   "theme_color": "#d4a23a",
   "icons": [
     {
-      "src": "./WhatsApp Image 2026-10-07 at 11.28.43.jpeg",
+      "src": "./WhatsApp Image 2026-10-07 at 11.28.43.png",
       "sizes": "1280x1280",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
