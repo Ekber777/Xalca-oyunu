@@ -1,28 +1,16 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
+  "name": "Xalça Oyunu",
+  "short_name": "Xalça",
+  "start_url": "./index.html",
   "display": "standalone",
-  "name": "Xalca oyunu",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "Xalca",
-  "start_url": "/",
-  "theme_color": "#ffffff",
+  "background_color": "#0d1b2a",
+  "theme_color": "#d4a23a",
   "icons": [
     {
-      "src": "https://bolt.new/static/og_default.png",
-      "type": "image/png",
-      "sizes": "1200x628",
-      "isSquare": false,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 1200,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
+      "src": "./WhatsApp Image 2026-10-07 at 11.28.43.jpeg",
+      "sizes": "1280x1280",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
     }
-  ],
-  "id": "/Xalca-oyunu/",
-  "description": "A fun and engaging traditional Azerbaijani carpet puzzle game"
+  ]
 }
