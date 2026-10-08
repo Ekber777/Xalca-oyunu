@@ -27,11 +27,10 @@ jobs:
       - name: Build web assets
         run: npm run build
 
-      - name: Add Android Platform
-        run: npx cap add android || true
-
-      - name: Sync Capacitor
-        run: npx cap sync android
+      - name: Recreate Android Platform
+        run: |
+          rm -rf android
+          npx cap add android
 
       - name: Setup Java
         uses: actions/setup-java@v4
