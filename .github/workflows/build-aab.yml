@@ -18,19 +18,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          
+          node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
 
       - name: Build web assets
         run: npm run build
 
-      - name: Recreate Android Platform
-        run: |
-          rm -rf android
-          npx cap add android
+      - name: Sync Capacitor
+        run: npx cap sync android
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -40,6 +38,10 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platforms;android-36
+            build-tools;36.0.0
 
       - name: Decode Keystore
         if: ${{ env.KEYSTORE_BASE64 != '' }}
